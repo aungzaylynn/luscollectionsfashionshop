@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Lu's Collections — modern fashion shopping catalog">
+  <title>Lu's Collections — Fashion Catalog</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root { --rose:#e11d48; --ink:#211f1d; --cream:#faf8f5; }
+    html { scroll-behavior:smooth; }
+    body { font-family:"DM Sans",sans-serif; background:var(--cream); color:var(--ink); }
+    .font-display { font-family:"Playfair Display",serif; }
+    .hide-scrollbar::-webkit-scrollbar { display:none; }
+    .hide-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+    .glass { background:rgba(255,255,255,.82); backdrop-filter:blur(16px); }
+    .card { transition:transform .25s ease, box-shadow .25s ease; }
+    .card:hover { transform:translateY(-4px); box-shadow:0 18px 40px rgba(45,35,30,.10); }
+    .product-img { transition:transform .5s ease; }
+    .card:hover .product-img { transform:scale(1.045); }
+    .drawer { transition:transform .3s ease; }
+    .drawer.closed { transform:translateX(105%); }
+    .modal { transition:opacity .2s ease; }
+    .modal.hidden { pointer-events:none; opacity:0; }
+    .modal-card { transition:transform .25s ease; }
+    .modal.hidden .modal-card { transform:translateY(12px) scale(.98); }
+    .toast { animation:toast .25s ease-out; }
+    @keyframes toast { from { transform:translate(-50%,12px); opacity:0; } to { transform:translate(-50%,0); opacity:1; } }
+    .marquee { animation:marquee 24s linear infinite; width:max-content; }
+    @keyframes marquee { to { transform:translateX(-50%); } }
+  </style>
+</head>
+
+<body>
+  <!-- Announcement -->
+  <div class="bg-stone-950 text-stone-100 text-[11px] sm:text-xs overflow-hidden">
+    <div class="marquee whitespace-nowrap py-2">
+      <span class="mx-8">✦ အမှာစာ ၅၀,၀၀၀ ကျပ်နှင့်အထက် ပို့ခအခမဲ့</span>
+      <span class="mx-8">✦ NEW ARRIVALS — 20% OFF</span>
+      <span class="mx-8">✦ Premium everyday wear • Plus Size available</span>
+      <span class="mx-8">✦ အမှာစာ ၅၀,၀၀၀ ကျပ်နှင့်အထက် ပို့ခအခမဲ့</span>
+      <span class="mx-8">✦ NEW ARRIVALS — 20% OFF</span>
+      <span class="mx-8">✦ Premium everyday wear • Plus Size available</span>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 glass border-b border-stone-200/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <a href="#home" onclick="showPage('home');return false;" class="shrink-0">
+        <div class="font-display text-xl sm:text-2xl font-bold tracking-[.08em]">LU'S</div>
+        <div class="text-[9px] tracking-[.32em] text-stone-500 -mt-1">COLLECTIONS</div>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-7 text-sm font-medium">
+        <a href="#home" data-page-nav="home" onclick="showPage('home');return false;" class="hover:text-rose-600">Home</a>
+        <a href="#shop" data-page-nav="shop" onclick="showPage('shop');return false;" class="hover:text-rose-600">Shop</a>
+        <a href="#promos" data-page-nav="promos" onclick="showPage('promos');return false;" class="hover:text-rose-600">Promos</a>
+        <a href="#about" data-page-nav="about" onclick="showPage('about');return false;" class="hover:text-rose-600">About</a>
+      </nav>
+
+      <div class="flex items-center gap-1">
+        <button onclick="focusSearch()" class="p-2.5 rounded-full hover:bg-stone-100" aria-label="Search">
+          <i data-lucide="search" class="w-5 h-5"></i>
+        </button>
+        <button onclick="openCart()" class="relative p-2.5 rounded-full hover:bg-stone-100" aria-label="Cart">
+          <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+          <span id="cartCount" class="absolute top-0.5 right-0.5 min-w-4 h-4 px-1 rounded-full bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- 1. HOME -->
+    <section id="home" class="relative overflow-hidden">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5">
+        <div class="relative min-h-[500px] sm:min-h-[590px] rounded-[28px] overflow-hidden bg-stone-900">
+          <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=85&w=1800&auto=format&fit=crop"
+               class="absolute inset-0 w-full h-full object-cover opacity-75" alt="Fashion collection">
+          <div class="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-transparent"></div>
+          <div class="relative z-10 flex items-center min-h-[500px] sm:min-h-[590px] px-7 sm:px-14 lg:px-20">
+            <div class="max-w-xl text-white">
+              <p class="uppercase tracking-[.28em] text-xs text-white/70 mb-5">New Season • 2026</p>
+              <h1 class="font-display text-4xl sm:text-6xl lg:text-7xl leading-[1.02] font-semibold">
+                Everyday elegance,<br><em class="font-normal">made yours.</em>
+              </h1>
+              <p class="mt-6 max-w-md text-sm sm:text-base text-white/80 leading-7">
+                Premium everyday wear, feminine essentials and comfortable plus-size styles — curated by Lu's Collections.
+              </p>
+              <div class="mt-8 flex flex-wrap gap-3">
+                <a href="#shop" onclick="showPage('shop');return false;" class="px-6 py-3.5 rounded-full bg-white text-stone-950 text-sm font-semibold hover:bg-stone-100">Shop collection</a>
+                <a href="#promos" onclick="showPage('promos');return false;" class="px-6 py-3.5 rounded-full border border-white/40 text-white text-sm font-semibold hover:bg-white/10">View offers</a>
+              </div>
+            </div>
+          </div>
+          <div class="absolute right-5 bottom-5 hidden sm:flex items-center gap-2 text-white/70 text-xs">
+            <span class="w-2 h-2 rounded-full bg-white"></span> Curated in Myanmar
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Search / category -->
+    <!-- 2. SEARCH BAR -->
+    <section id="search" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+      <div class="text-center mb-4">
+        <p class="text-rose-600 text-xs font-bold tracking-[.18em] uppercase">Find your style</p>
+        <h2 class="font-display text-2xl sm:text-3xl font-semibold mt-1">What are you looking for?</h2>
+      </div>
+      <div id="searchBox" class="relative">
+        <i data-lucide="search" class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400"></i>
+        <input id="searchInput" oninput="showAll=false; renderProducts()" type="search"
+          placeholder="Search dresses, tops, sleepwear..."
+          class="w-full pl-12 pr-5 py-4 sm:py-5 rounded-2xl bg-white border border-stone-200 outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 shadow-sm text-sm sm:text-base">
+      </div>
+    </section>
+
+    <!-- 3. NEW ARRIVALS -->
+    <section id="newArrivalsSection" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
+      <div class="flex items-end justify-between gap-4 mb-6">
+        <div>
+          <p class="text-rose-600 text-xs font-bold tracking-[.18em] uppercase">Fresh edit</p>
+          <h2 class="font-display text-3xl sm:text-4xl font-semibold mt-1">New Arrivals</h2>
+        </div>
+        <button onclick="setCategory('All')" class="hidden sm:flex items-center gap-1 text-sm font-semibold hover:text-rose-600">View all <i data-lucide="arrow-right" class="w-4 h-4"></i></button>
+      </div>
+      <div id="newArrivals" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"></div>
+    </section>
+
+    <!-- 4. OOTD -->
+    <section id="ootd" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
+      <div class="rounded-[28px] bg-rose-50 border border-rose-100 overflow-hidden grid md:grid-cols-2">
+        <div class="min-h-[340px] md:min-h-[500px]">
+          <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=85&w=1000&auto=format&fit=crop" class="w-full h-full object-cover" alt="OOTD">
+        </div>
+        <div class="p-7 sm:p-12 flex flex-col justify-center">
+          <span class="self-start bg-rose-600 text-white text-[10px] font-bold tracking-wider px-3 py-1.5 rounded-full">OOTD</span>
+          <h2 class="font-display text-3xl sm:text-4xl font-semibold mt-5">Casual elegance.</h2>
+          <p class="text-stone-600 text-sm leading-7 mt-4">ပေါ့ပါးသွက်လက်ပြီး နေ့စဉ်ဝတ်အတွက် အလွယ်တကူ match လုပ်လို့ရတဲ့ minimalist look.</p>
+          <div class="mt-6 space-y-2">
+            <div class="flex justify-between bg-white rounded-xl px-4 py-3 border border-rose-100"><span class="text-sm">Cream Silk Shirt</span><b class="text-sm">28,000 Ks</b></div>
+            <div class="flex justify-between bg-white rounded-xl px-4 py-3 border border-rose-100"><span class="text-sm">Wide Leg Trouser</span><b class="text-sm">35,000 Ks</b></div>
+          </div>
+          <button onclick="addBundle()" class="mt-5 w-full rounded-xl bg-stone-950 text-white py-3.5 text-sm font-semibold hover:bg-stone-800">Add full look • 63,000 Ks</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. SHOP CATALOG -->
+    <section id="shop" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
+      <div class="mb-7">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <p class="text-rose-600 text-xs font-bold tracking-[.18em] uppercase">The catalog</p>
+            <h2 id="shopTitle" class="font-display text-3xl sm:text-4xl font-semibold mt-1">Shop Catalog</h2>
+            <p id="resultCount" class="text-stone-500 text-sm mt-2"></p>
+          </div>
+          <select id="sortSelect" onchange="renderProducts()" class="bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm outline-none">
+            <option value="newest">Sort: Newest</option>
+            <option value="low">Price: Low to High</option>
+            <option value="high">Price: High to Low</option>
+            <option value="name">Name A–Z</option>
+          </select>
+        </div>
+
+        <!-- Catalog chooser -->
+        <div class="mt-6 p-4 sm:p-5 rounded-2xl bg-stone-50 border border-stone-200">
+          <div class="mb-3">
+            <p class="text-xs font-bold uppercase tracking-[.14em] text-stone-400">Catalog</p>
+          </div>
+          <div id="categoryPills" class="flex gap-2 overflow-x-auto hide-scrollbar pb-1"></div>
+        </div>
+      </div>
+
+      <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"></div>
+
+      <div id="viewAllWrap" class="text-center mt-8">
+        <button onclick="showAllProducts()" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-stone-950 text-white text-sm font-semibold hover:bg-stone-800 transition">
+          View All Products <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- 6. PROMOTIONS -->
+    <section id="promos" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
+      <div class="rounded-[28px] bg-stone-950 text-white p-7 sm:p-10 overflow-hidden relative">
+        <div class="relative z-10 max-w-2xl">
+          <p class="text-rose-300 text-xs font-bold tracking-[.18em] uppercase">Limited offers</p>
+          <h2 class="font-display text-3xl sm:text-4xl font-semibold mt-2">Promotion & Special Offers</h2>
+          <p class="text-stone-400 text-sm leading-7 mt-3">Selected styles are on offer for a limited time. Grab your favourites before the promotion ends.</p>
+        </div>
+        <div class="absolute -right-20 -bottom-32 w-80 h-80 rounded-full bg-rose-500/20 blur-3xl"></div>
+      </div>
+
+      <div class="flex items-end justify-between gap-4 mt-10 mb-6">
+        <div>
+          <p class="text-rose-600 text-xs font-bold tracking-[.18em] uppercase">On sale now</p>
+          <h3 class="font-display text-2xl sm:text-3xl font-semibold mt-1">Promotion Items</h3>
+          <p id="promoResultCount" class="text-stone-500 text-sm mt-2"></p>
+        </div>
+        <button onclick="showAllPromos()" id="promoViewAllTop" class="hidden sm:inline-flex items-center gap-2 text-sm font-semibold hover:text-rose-600">
+          View all <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div id="promoGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"></div>
+
+      <div id="promoViewAllWrap" class="text-center mt-8">
+        <button onclick="showAllPromos()" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-stone-950 text-white text-sm font-semibold hover:bg-stone-800 transition">
+          View All Promotions <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- 7. ABOUT US -->
+    <section id="about" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
+      <div class="border-t border-stone-200 pt-10 grid md:grid-cols-3 gap-10">
+        <div>
+          <div class="font-display text-2xl font-bold">LU'S</div>
+          <p class="text-stone-500 text-sm leading-7 mt-3">Quality & modern apparel retail and wholesale. ရှမ်းပြည်နယ်၊ တောင်ကြီးမြို့မှ Lu's Collections.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold">Customer care</h3>
+          <div class="text-sm text-stone-500 space-y-2 mt-3">
+            <p>📞 <a id="shopPhoneLink" href="tel:09-XXXXXXXXX" class="hover:text-rose-600"><span id="shopPhone">09-XXXXXXXXX</span></a></p>
+            <p>🕘 Daily • 9:00 AM – 6:00 PM</p>
+            <p>📍 <span id="shopAddress">တောင်ကြီးမြို့၊ ရှမ်းပြည်နယ်</span></p>
+            <div id="socialLinks" class="flex flex-wrap gap-2 pt-2"></div>
+          </div>
+        </div>
+        <div>
+          <h3 class="font-semibold">Shopping</h3>
+          <div class="text-sm text-stone-500 space-y-2 mt-3">
+            <a href="#shop" onclick="showPage('shop');return false;" class="block hover:text-rose-600">All products</a>
+            <a href="#promos" onclick="showPage('promos');return false;" class="block hover:text-rose-600">Promotions</a>
+            <button onclick="openCart()" class="hover:text-rose-600">Your cart</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-stone-950 text-stone-500 text-xs text-center py-7">© 2026 Lu's Collections. All rights reserved.</footer>
+
+  <!-- Product detail modal -->
+  <div id="productModal" class="modal hidden fixed inset-0 z-[60] bg-black/50 p-4 flex items-center justify-center" onclick="if(event.target===this) closeProduct()">
+    <div class="modal-card bg-white rounded-[24px] max-w-3xl w-full max-h-[90vh] overflow-auto">
+      <div id="productDetail"></div>
+    </div>
+  </div>
+
+  <!-- Cart drawer -->
+  <div id="cartOverlay" class="hidden fixed inset-0 z-[70] bg-black/40" onclick="if(event.target===this)closeCart()">
+    <aside id="cartDrawer" class="drawer closed absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col">
+      <div class="p-5 border-b flex items-center justify-between">
+        <div><h2 class="font-display text-2xl font-semibold">Your bag</h2><p id="cartSubtitle" class="text-xs text-stone-500"></p></div>
+        <button onclick="closeCart()" class="p-2 rounded-full hover:bg-stone-100"><i data-lucide="x"></i></button>
+      </div>
+      <div id="cartItems" class="flex-1 overflow-y-auto p-5 space-y-4"></div>
+      <div class="border-t p-5">
+        <div class="flex justify-between text-sm"><span>Subtotal</span><b id="cartSubtotal">0 Ks</b></div>
+        <div class="flex justify-between text-sm text-stone-500 mt-2"><span>Delivery</span><span id="deliveryFee">Calculated at checkout</span></div>
+        <button onclick="openCheckout()" class="mt-4 w-full py-3.5 rounded-xl bg-stone-950 text-white font-semibold">Checkout</button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Checkout modal -->
+  <div id="checkoutModal" class="modal hidden fixed inset-0 z-[80] bg-black/50 p-4 flex items-center justify-center" onclick="if(event.target===this)closeCheckout()">
+    <div class="modal-card bg-white rounded-[24px] max-w-lg w-full max-h-[92vh] overflow-auto p-6">
+      <div class="flex items-center justify-between">
+        <div><p class="text-rose-600 text-xs font-bold tracking-wider uppercase">Checkout</p><h2 class="font-display text-3xl font-semibold">Complete order</h2></div>
+        <button onclick="closeCheckout()" class="p-2 rounded-full hover:bg-stone-100"><i data-lucide="x"></i></button>
+      </div>
+      <form onsubmit="placeOrder(event)" class="mt-6 space-y-4">
+        <input required id="customerName" placeholder="Customer name" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200">
+        <input required id="customerPhone" placeholder="Phone number" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200">
+        <input id="customerEmail" type="email" placeholder="Email (optional)" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200">
+        <textarea required id="customerAddress" rows="3" placeholder="Delivery address" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200"></textarea>
+        <select id="paymentMethod" onchange="updatePaymentHint()" class="w-full border border-stone-200 rounded-xl px-4 py-3">
+          <option>Cash on Delivery</option><option>KBZPay</option><option>WavePay</option>
+        </select>
+        <div id="paymentHint" class="rounded-xl bg-rose-50 text-rose-900 p-4 text-xs leading-6 hidden"></div>
+        <input id="paymentReference" placeholder="Payment transaction ID / reference (optional)" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200">
+        <textarea id="customerNote" rows="2" placeholder="Order note (optional)" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200"></textarea>
+        <div class="rounded-xl bg-stone-50 p-4 flex justify-between"><span class="text-sm">Order total</span><b id="checkoutTotal"></b></div>
+        <button class="w-full py-3.5 rounded-xl bg-rose-600 text-white font-semibold hover:bg-rose-700">Place order</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="hidden fixed z-[100] left-1/2 bottom-7 -translate-x-1/2 bg-stone-950 text-white px-5 py-3 rounded-full text-sm shadow-xl"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/config.js"></script>
+<script>
+const db = supabase.createClient(window.LUS_SUPABASE_URL, window.LUS_SUPABASE_ANON_KEY, {
+  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+});
+let products=[];
+let settings={};
+let category='All';
+let showAll=false;
+let promoShowAll=false;
+let currentPage='home';
+let cart=JSON.parse(localStorage.getItem('lus_cart')||'[]');
+let selectedSize='';
+let selectedColor='';
+
+const money=n=>new Intl.NumberFormat('en-US').format(Number(n||0))+' Ks';
+const catalogCategories=['All','Top & Blouse','Dresses','Pants','Skirt','Cozy & Outerwear','Plus Size','Set & Suit','Sleepwear','Other'];
+
+async function loadStore(){
+  const [{data:productData,error:pe},{data:settingData,error:se}] = await Promise.all([
+    db.from('products').select('*').eq('is_active',true).order('created_at',{ascending:false}),
+    db.from('settings').select('key,value')
+  ]);
+  if(pe) throw pe; if(se) throw se;
+  products=(productData||[]).map(p=>({...p,sizes:Array.isArray(p.sizes)?p.sizes:[],colors:Array.isArray(p.colors)?p.colors:[]}));
+  settings=Object.fromEntries((settingData||[]).map(x=>[x.key,x.value]));
+  applySettings();
+}
+function applySettings(){
+  const phone=document.getElementById('shopPhone'); if(phone) phone.textContent=settings.phone||'09-XXXXXXXXX';
+  const phoneLink=document.getElementById('shopPhoneLink'); if(phoneLink) phoneLink.href='tel:'+String(settings.phone||'09-XXXXXXXXX').replace(/\s+/g,'');
+  const address=document.getElementById('shopAddress'); if(address) address.textContent=settings.address||'တောင်ကြီးမြို့၊ ရှမ်းပြည်နယ်။';
+  const social=document.getElementById('socialLinks'); if(social) social.innerHTML=[['Viber',settings.viber],['Facebook',settings.facebook],['TikTok',settings.tiktok]].filter(x=>x[1]&&x[1]!=='#').map(x=>`<a href="${x[1]}" target="_blank" rel="noopener" class="px-3 py-1.5 rounded-full bg-stone-100 hover:bg-stone-200 text-xs">${x[0]}</a>`).join('');
+  const shopName=settings.shop_name||"Lu's Collections";
+  document.title=shopName+' — Fashion Catalog';
+}
+function filtered(){
+  const q=(document.getElementById('searchInput')?.value||'').trim().toLowerCase();
+  let list=products.filter(p=>category==='All'||p.category===category);
+  if(q) list=list.filter(p=>(p.name+' '+p.category+' '+p.description).toLowerCase().includes(q));
+  const sort=document.getElementById('sortSelect')?.value||'newest';
+  if(sort==='low') list.sort((a,b)=>a.price-b.price);
+  if(sort==='high') list.sort((a,b)=>b.price-a.price);
+  if(sort==='name') list.sort((a,b)=>a.name.localeCompare(b.name));
+  return list;
+}
+function categories(){
+  const el=document.getElementById('categoryPills'); if(!el)return;
+  el.innerHTML=catalogCategories.map(c=>`<button onclick="setCategory('${c}')" class="whitespace-nowrap px-4 py-2.5 rounded-full text-xs font-semibold border ${category===c?'bg-stone-950 text-white border-stone-950':'bg-white text-stone-600 border-stone-200 hover:border-stone-400'}">${c}</button>`).join('');
+}
+function card(p){
+  const soldOut=Number(p.stock)<=0;
+  return `<article class="card bg-white rounded-2xl overflow-hidden border border-stone-200 cursor-pointer" onclick="openProduct(${p.id})">
+    <div class="aspect-[4/5] bg-stone-100 relative overflow-hidden"><img src="${p.image}" class="product-img w-full h-full object-cover" alt="${p.name}">${p.badge?`<span class="absolute top-3 left-3 bg-stone-950 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">${p.badge}</span>`:''}${soldOut?'<span class="absolute inset-0 bg-white/55 flex items-center justify-center"><span class="bg-stone-950 text-white text-xs px-3 py-1.5 rounded-full">Sold out</span></span>':''}</div>
+    <div class="p-4"><p class="text-[10px] uppercase tracking-wider text-stone-400">${p.category}</p><h3 class="text-sm font-semibold mt-1 truncate">${p.name}</h3><div class="flex items-center gap-2 mt-1.5"><b class="text-sm">${money(p.price)}</b>${p.old_price?`<span class="text-xs text-stone-400 line-through">${money(p.old_price)}</span>`:''}</div><button ${soldOut?'disabled':''} onclick="event.stopPropagation();addToCart(${p.id})" class="mt-3 w-full border border-stone-300 hover:bg-stone-950 hover:text-white disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-stone-800 rounded-xl py-2.5 text-xs font-semibold transition">${soldOut?'Sold out':'Add to bag'}</button></div>
+  </article>`;
+}
+function renderProducts(){
+  categories();
+  const list=filtered();
+  const visible=showAll?list:list.slice(0,6);
+  document.getElementById('resultCount').textContent=showAll?`${list.length} pieces`:`${Math.min(list.length,6)} of ${list.length} pieces`;
+  document.getElementById('shopTitle').textContent=showAll?'Shop — All Products':'Shop Catalog';
+  document.getElementById('productGrid').innerHTML=visible.length?visible.map(card).join(''):`<div class="col-span-full text-center py-16"><p class="font-display text-2xl">No pieces found.</p><p class="text-sm text-stone-500 mt-2">Try another search or category.</p></div>`;
+  document.getElementById('viewAllWrap').classList.toggle('hidden',showAll||list.length<=6);
+  const na=document.getElementById('newArrivals'); if(na)na.innerHTML=products.filter(p=>p.is_featured).slice(0,4).map(card).join('');
+  lucide.createIcons();
+}
+function setCategory(c){category=c;showAll=false;renderProducts();showPage('shop');}
+function showAllProducts(){showAll=true;showPage('shop');}
+function promoProducts(){return products.filter(p=>p.old_price);}
+function renderPromos(){
+  const list=promoProducts();const visible=promoShowAll?list:list.slice(0,6);
+  document.getElementById('promoResultCount').textContent=promoShowAll?`${list.length} promotion items`:`${Math.min(list.length,6)} of ${list.length} promotion items`;
+  document.getElementById('promoGrid').innerHTML=visible.length?visible.map(card).join(''):`<div class="col-span-full text-center py-16"><p class="font-display text-2xl">No promotion items yet.</p></div>`;
+  document.getElementById('promoViewAllWrap').classList.toggle('hidden',promoShowAll||list.length<=6);
+  document.getElementById('promoViewAllTop').classList.toggle('hidden',promoShowAll||list.length<=6);
+  lucide.createIcons();
+}
+function showAllPromos(){promoShowAll=true;showPage('promos');}
+function showPage(page){
+  currentPage=page;
+  const ids={home:['home','search','newArrivalsSection','ootd'],shop:['shop'],promos:['promos'],about:['about']};
+  ['home','search','newArrivalsSection','ootd','shop','promos','about'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
+  (ids[page]||ids.home).forEach(id=>document.getElementById(id)?.classList.remove('hidden'));
+  if(page==='shop')renderProducts();
+  if(page==='promos')renderPromos();
+  document.querySelectorAll('[data-page-nav]').forEach(a=>a.classList.toggle('text-stone-950',a.dataset.pageNav===page));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function focusSearch(){showPage('home');setTimeout(()=>document.getElementById('searchInput')?.focus(),150)}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),2400)}
+function saveCart(){localStorage.setItem('lus_cart',JSON.stringify(cart));updateCartCount();renderCart()}
+function updateCartCount(){document.getElementById('cartCount').textContent=cart.reduce((s,i)=>s+i.qty,0)}
+function addToCart(id){const p=products.find(x=>x.id===id);if(!p||p.stock<=0)return;const size=selectedSize||p.sizes?.[0]||'';const color=selectedColor||p.colors?.[0]||'';const key=`${id}-${size}-${color}`;const found=cart.find(x=>x.key===key);if(found){if(found.qty>=p.stock){toast('Not enough stock');return}found.qty++}else cart.push({key,id,qty:1,size,color});saveCart();toast(`${p.name} added to your bag`)}
+function changeQty(key,d){const x=cart.find(i=>i.key===key);if(!x)return;const p=products.find(y=>y.id===x.id);x.qty+=d;if(p&&x.qty>p.stock)x.qty=p.stock;if(x.qty<=0)cart=cart.filter(i=>i.key!==key);saveCart()}
+function removeItem(key){cart=cart.filter(i=>i.key!==key);saveCart()}
+function cartTotal(){return cart.reduce((sum,i)=>{const p=products.find(x=>x.id===i.id);return sum+(p?p.price*i.qty:0)},0)}
+function renderCart(){
+  const wrap=document.getElementById('cartItems');document.getElementById('cartSubtitle').textContent=`${cart.reduce((s,i)=>s+i.qty,0)} item(s)`;
+  if(!cart.length)wrap.innerHTML=`<div class="text-center py-20"><p class="font-display text-xl">Your bag is empty</p><button onclick="closeCart();showPage('shop')" class="mt-4 text-sm font-semibold underline">Start shopping</button></div>`;
+  else wrap.innerHTML=cart.map(i=>{const p=products.find(x=>x.id===i.id);if(!p)return '';return `<div class="flex gap-3"><img src="${p.image}" class="w-20 h-24 object-cover rounded-xl"><div class="flex-1 min-w-0"><div class="flex justify-between gap-2"><h3 class="text-sm font-semibold truncate">${p.name}</h3><button onclick="removeItem('${i.key}')" class="text-stone-400">×</button></div><p class="text-xs text-stone-500 mt-1">${i.size} • ${i.color}</p><b class="text-sm block mt-1">${money(p.price*i.qty)}</b><div class="inline-flex items-center border rounded-lg mt-2"><button onclick="changeQty('${i.key}',-1)" class="px-2.5 py-1">−</button><span class="text-xs w-7 text-center">${i.qty}</span><button onclick="changeQty('${i.key}',1)" class="px-2.5 py-1">+</button></div></div></div>`}).join('');
+  document.getElementById('cartSubtotal').textContent=money(cartTotal());lucide.createIcons();
+}
+function openCart(){document.getElementById('cartOverlay').classList.remove('hidden');requestAnimationFrame(()=>document.getElementById('cartDrawer').classList.remove('closed'));renderCart()}
+function closeCart(){document.getElementById('cartDrawer').classList.add('closed');setTimeout(()=>document.getElementById('cartOverlay').classList.add('hidden'),250)}
+function openProduct(id){const p=products.find(x=>x.id===id);if(!p)return;selectedSize=p.sizes?.[0]||'';selectedColor=p.colors?.[0]||'';document.getElementById('productDetail').innerHTML=`<div class="grid md:grid-cols-2"><div class="aspect-[4/5]"><img src="${p.image}" class="w-full h-full object-cover"></div><div class="p-6 sm:p-9 flex flex-col"><div class="flex justify-between"><div><p class="text-rose-600 text-xs font-bold tracking-wider uppercase">${p.category}</p><h2 class="font-display text-3xl font-semibold mt-2">${p.name}</h2></div><button onclick="closeProduct()" class="p-2">×</button></div><div class="mt-4"><b class="text-xl">${money(p.price)}</b>${p.old_price?` <span class="text-sm text-stone-400 line-through ml-2">${money(p.old_price)}</span>`:''}</div><p class="text-sm text-stone-600 leading-7 mt-5">${p.description||''}</p><div class="mt-7"><label class="text-xs font-bold uppercase tracking-wider">Size</label><div class="flex flex-wrap gap-2 mt-2">${(p.sizes||[]).map(s=>`<button onclick="selectSize('${s}',this)" class="sizeOpt px-4 py-2 rounded-lg border text-xs ${s===selectedSize?'bg-stone-950 text-white':''}">${s}</button>`).join('')}</div></div><div class="mt-5"><label class="text-xs font-bold uppercase tracking-wider">Color</label><div class="flex flex-wrap gap-2 mt-2">${(p.colors||[]).map(c=>`<button onclick="selectColor('${c}',this)" class="px-4 py-2 rounded-lg border text-xs ${c===selectedColor?'bg-stone-950 text-white':''}">${c}</button>`).join('')}</div></div><button ${p.stock<=0?'disabled':''} onclick="addToCart(${p.id});closeProduct()" class="mt-auto pt-6 disabled:opacity-40"><span class="block w-full py-3.5 rounded-xl bg-stone-950 text-white text-sm font-semibold">${p.stock<=0?'Sold out':'Add to bag • '+money(p.price)}</span></button></div></div>`;document.getElementById('productModal').classList.remove('hidden')}
+function selectSize(v,e){selectedSize=v;e.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('bg-stone-950','text-white'));e.classList.add('bg-stone-950','text-white')}
+function selectColor(v,e){selectedColor=v;e.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('bg-stone-950','text-white'));e.classList.add('bg-stone-950','text-white')}
+function closeProduct(){document.getElementById('productModal').classList.add('hidden')}
+function updatePaymentHint(){
+  const m=document.getElementById('paymentMethod').value;
+  const hint=document.getElementById('paymentHint');
+  if(m==='KBZPay' && settings.kbzpay){hint.innerHTML=`KBZPay: <b>${settings.kbzpay}</b><br>ငွေလွှဲပြီးရင် transaction/reference နံပါတ်ကို အောက်မှာထည့်ပေးပါ။`;hint.classList.remove('hidden')}
+  else if(m==='WavePay' && settings.wavepay){hint.innerHTML=`WavePay: <b>${settings.wavepay}</b><br>ငွေလွှဲပြီးရင် transaction/reference နံပါတ်ကို အောက်မှာထည့်ပေးပါ။`;hint.classList.remove('hidden')}
+  else {hint.classList.add('hidden');hint.innerHTML=''}
+}
+function openCheckout(){if(!cart.length){toast('Your bag is empty');return}closeCart();document.getElementById('checkoutTotal').textContent=money(cartTotal()+Number(settings.delivery_fee||0));document.getElementById('checkoutModal').classList.remove('hidden');updatePaymentHint()}
+function closeCheckout(){document.getElementById('checkoutModal').classList.add('hidden')}
+async function placeOrder(e){
+  e.preventDefault();
+  try{
+    const items=cart.map(i=>({productId:i.id,qty:i.qty,size:i.size||'',color:i.color||''}));
+    const {data,error}=await db.rpc('create_order',{
+      p_customer_name:customerName.value,
+      p_phone:customerPhone.value,
+      p_email:customerEmail.value||'',
+      p_address:customerAddress.value,
+      p_note:customerNote.value||'',
+      p_payment_method:paymentMethod.value,
+      p_payment_reference:paymentReference.value||'',
+      p_items:items
+    });
+    if(error) throw error;
+    const phone=customerPhone.value;
+    cart=[];saveCart();closeCheckout();
+    await loadStore();renderProducts();renderPromos();
+    toast(`Order ${data.orderNo} received`);
+    setTimeout(()=>alert(`Thank you!\nOrder: ${data.orderNo}\nTotal: ${money(data.total)}\nWe will contact you at ${phone}.`),250);
+  }catch(err){console.error(err);toast(err.message||'Unable to place order')}
+}
+function addBundle(){const a=products.find(p=>p.name==='Casual Linen Blouse');const b=products.find(p=>p.name==='Wide Leg Trouser');if(a)addToCart(a.id);if(b)addToCart(b.id)}
+function setPromo(){promoShowAll=false;showPage('promos')}
+
+(async()=>{
+  try{await loadStore();renderProducts();renderPromos();renderCart();updateCartCount();showPage('home');}
+  catch(e){console.error(e);toast('Supabase is not connected yet. Please finish config.js setup.')}
+})();
+lucide.createIcons();
+</script>
+</body>
+</html>

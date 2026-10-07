@@ -1,0 +1,9 @@
+{
+  "name": "lus-collections-vercel-supabase",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Lu's Collections online shop for Vercel + Supabase",
+  "scripts": {
+    "build": "node -e \"console.log('Static Vercel build: no compilation required')\""
+  }
+}
