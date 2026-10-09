@@ -221,23 +221,22 @@
     </section>
 
     <!-- 7. ABOUT US / SHOP INFORMATION -->
-    <section id="about" class="pt-10 sm:pt-14 pb-14 sm:pb-16 bg-white">
-      <div class="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8">
+    <section id="about" class="w-full min-h-[calc(100svh-64px)] pt-0 pb-10 sm:pb-14 bg-white">
+      <div class="w-full max-w-none mx-auto px-0">
         <!-- Full shop wallpaper: keep the complete artwork visible on desktop and mobile -->
-        <div class="overflow-hidden rounded-xl sm:rounded-2xl border border-stone-200 bg-[#f8efe3] shadow-sm">
-          <img src="/about-wallpaper.png" alt="Lu's Collections Fashion Shop logo and QR codes" class="block w-full h-auto object-contain" loading="eager" fetchpriority="high">
+        <div class="w-full overflow-hidden bg-[#f8efe3]">
+          <img src="/about-wallpaper.png" alt="Lu's Collections Fashion Shop logo and QR codes" class="block w-full h-auto max-h-none object-contain" loading="eager" fetchpriority="high" style="width:100%;height:auto;object-fit:contain">
         </div>
 
         <!-- Store profile and icon-only social links -->
-        <div class="text-center max-w-3xl mx-auto mt-6 sm:mt-8">
-          <div class="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-white bg-stone-950 text-white shadow-lg font-display text-base sm:text-lg font-bold">LU'S</div>
-          <h2 class="font-display text-xl sm:text-2xl md:text-3xl font-bold mt-3 leading-snug">☘️ 𝐋𝐮’𝐬 𝐂𝐨𝐥𝐥𝐞𝐜𝐭𝐢𝐨𝐧𝐬 𝐅𝐚𝐬𝐡𝐢𝐨𝐧 𝐒𝐡𝐨𝐩 ☘️</h2>
+        <div class="text-center w-full max-w-5xl mx-auto px-4 sm:px-6 mt-6 sm:mt-8">
+          <h2 class="font-display text-xl sm:text-2xl md:text-3xl font-bold leading-snug">☘️ 𝐋𝐮’𝐬 𝐂𝐨𝐥𝐥𝐞𝐜𝐭𝐢𝐨𝐧𝐬 𝐅𝐚𝐬𝐡𝐢𝐨𝐧 𝐒𝐡𝐨𝐩 ☘️</h2>
           <p class="text-stone-500 text-xs sm:text-sm mt-2">Quality &amp; Modern Apparel Retail &amp; Wholesale</p>
           <div id="socialLinks" class="flex items-center justify-center flex-wrap gap-3 mt-5" aria-label="Shop social media links"></div>
         </div>
 
         <!-- Shop address and exact shop map pin -->
-        <div class="mt-8 sm:mt-10 rounded-2xl border border-stone-200 bg-stone-50 p-4 sm:p-6 grid grid-cols-1 md:grid-cols-5 gap-5 sm:gap-6">
+        <div class="w-full mt-8 sm:mt-10 border-y border-stone-200 bg-stone-50 p-4 sm:p-6 lg:p-8 grid grid-cols-1 md:grid-cols-5 gap-5 sm:gap-6">
           <div class="md:col-span-2 space-y-4 min-w-0">
             <h3 class="font-display font-bold text-stone-900 text-lg sm:text-xl">Our Location</h3>
             <p class="text-sm sm:text-base text-stone-700 flex items-start gap-2 leading-7">
@@ -260,7 +259,7 @@
           </div>
         </div>
 
-        <div class="mt-5 sm:mt-6 rounded-2xl border border-stone-200 bg-white p-4 sm:p-6 md:p-8">
+        <div class="w-full mt-5 sm:mt-6 border-y border-stone-200 bg-white p-4 sm:p-6 md:p-8 lg:px-10">
           <h3 class="font-display text-lg sm:text-xl font-bold">အိမ်အရောက်ပို့ဆောင်မှုနှင့် ငွေပေးချေမှု</h3>
           <p class="mt-3 sm:mt-4 text-sm sm:text-base leading-7 sm:leading-8 text-stone-700">တောင်ကြီးမြို့တွင်းအိမ်ရောက်ငွေချေရပါတယ်ရှင့်။ တောင်ကြီးမြို့ကဘဲဆိုရင် ဆိုင်မှာစိတ်တိုင်းကျလာရောက်ရွေးချယ်ဝတ်ကြည့်ပြီး အကြိုက်တွေ့မှအားပေးလို့ရပါတယ်ရှင့်။ အခြားသောမြို့များကတော့ငွေကြိုလွဲရပါမယ်ရှင့်။ ငွေလွဲဝင်ပြီးနောက်တစ်ရက် သက်ဆိုင်ရာ ကားဂိတ် (သို့) အိမ်အရောက်ပို့ Delivery စနစ်နဲ့ပို့ဆောင်ပေးပါတယ်နော်။</p>
           <div class="mt-5 border-t border-stone-200 pt-4">
@@ -273,7 +272,7 @@
           </div>
         </div>
 
-        <div class="mt-7 border-t border-stone-200 pt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="w-full mt-7 border-t border-stone-200 pt-5 px-4 sm:px-6 lg:px-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div><div class="font-display text-lg sm:text-xl font-bold">LU'S COLLECTIONS</div><p class="text-stone-500 text-sm mt-1">☘️ Lu’s Collections Fashion Shop • Taunggyi, Shan State</p></div>
           <div class="flex flex-wrap gap-4 text-sm text-stone-500">
             <a href="#shop" onclick="showPage('shop');return false;" class="hover:text-rose-600">All products</a>
@@ -369,12 +368,11 @@ function applySettings(){
   const social=document.getElementById('socialLinks');
   if(social) {
     const socialItems=[
-      {name:'Facebook',url:settings.facebook,src:'https://cdn.simpleicons.org/facebook/1877F2',bg:'bg-white border-stone-200'},
-      {name:'TikTok',url:settings.tiktok,src:'https://cdn.simpleicons.org/tiktok/FFFFFF',bg:'bg-black border-black'},
-      {name:'Viber',url:settings.viber,src:'https://cdn.simpleicons.org/viber/FFFFFF',bg:'bg-[#7360F2] border-[#7360F2]'}
-    ].filter(x=>x.url&&x.url!=='#');
-    social.innerHTML=socialItems.map(x=>`<a href="${x.url}" target="_blank" rel="noopener noreferrer" aria-label="Open Lu's Collections on ${x.name}" title="${x.name}" class="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full border ${x.bg} shadow-sm hover:-translate-y-0.5 hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"><img src="${x.src}" alt="${x.name} logo" class="w-6 h-6 sm:w-7 sm:h-7 object-contain" loading="lazy"></a>`).join('');
-    if(!socialItems.length) social.innerHTML='<p class="text-xs sm:text-sm text-stone-500">Facebook, TikTok နှင့် Viber လင့်ခ်များကို Admin Settings တွင် ထည့်သွင်းပေးပါ။</p>';
+      {name:'Facebook',url:'https://www.facebook.com/luscollections',src:'https://cdn.simpleicons.org/facebook/1877F2',bg:'bg-white border-stone-200'},
+      {name:'TikTok',url:'https://tiktok.com/@lucollections?_r=1&_t=ZS-99QJwRSzUsG',src:'https://cdn.simpleicons.org/tiktok/FFFFFF',bg:'bg-black border-black'},
+      {name:'Viber',url:'viber://chat?number=%2B959428326702',src:'https://cdn.simpleicons.org/viber/FFFFFF',bg:'bg-[#7360F2] border-[#7360F2]'}
+    ];
+    social.innerHTML=socialItems.map(x=>`<a href="${x.url}" target="_blank" rel="noopener noreferrer" aria-label="Open Lu's Collections on ${x.name}" title="${x.name}" class="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full border ${x.bg} shadow-sm hover:-translate-y-0.5 hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"><img src="${x.src}" alt="${x.name} official logo" class="w-6 h-6 sm:w-7 sm:h-7 object-contain" loading="lazy"></a>`).join('');
   }
   const shopName=settings.shop_name||"Lu's Collections";
   document.title=shopName+' — Fashion Catalog';
