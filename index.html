@@ -14,8 +14,9 @@
 
   <style>
     :root { --rose:#e11d48; --ink:#211f1d; --cream:#faf8f5; }
-    html { scroll-behavior:smooth; }
-    body { font-family:"DM Sans",sans-serif; background:var(--cream); color:var(--ink); }
+    html { scroll-behavior:smooth; scroll-padding-top:88px; }
+    body { font-family:"DM Sans",sans-serif; background:var(--cream); color:var(--ink); overflow-x:hidden; }
+    section[id] { scroll-margin-top:88px; }
     .font-display { font-family:"Playfair Display",serif; }
     .hide-scrollbar::-webkit-scrollbar { display:none; }
     .hide-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
@@ -379,17 +380,51 @@ function renderPromos(){
   lucide.createIcons();
 }
 function showAllPromos(){promoShowAll=true;showPage('promos');}
-function showPage(page){
+const sectionIds=['home','search','newArrivalsSection','ootd','shop','promos','about'];
+function revealAllSections(){
+  sectionIds.forEach(id=>document.getElementById(id)?.classList.remove('hidden'));
+}
+function setActiveNav(page){
+  document.querySelectorAll('[data-page-nav]').forEach(a=>{
+    const active=a.dataset.pageNav===page;
+    a.classList.toggle('text-stone-950',active);
+    a.classList.toggle('font-semibold',active);
+  });
+}
+function showPage(page,{updateHash=true}={}){
   currentPage=page;
-  const ids={home:['home','search','newArrivalsSection','ootd'],shop:['shop'],promos:['promos'],about:['about']};
-  ['home','search','newArrivalsSection','ootd','shop','promos','about'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
-  (ids[page]||ids.home).forEach(id=>document.getElementById(id)?.classList.remove('hidden'));
+  revealAllSections();
   if(page==='shop')renderProducts();
   if(page==='promos')renderPromos();
-  document.querySelectorAll('[data-page-nav]').forEach(a=>a.classList.toggle('text-stone-950',a.dataset.pageNav===page));
-  window.scrollTo({top:0,behavior:'smooth'});
+  setActiveNav(page);
+
+  if(updateHash){
+    const nextHash='#'+page;
+    if(window.location.hash!==nextHash){
+      history.pushState({page},'',nextHash);
+    }
+  }
+
+  if(page==='home'){
+    window.scrollTo({top:0,behavior:'smooth'});
+    return;
+  }
+  const target=document.getElementById(page);
+  if(target){
+    target.scrollIntoView({behavior:'smooth',block:'start'});
+  }
 }
-function focusSearch(){showPage('home');setTimeout(()=>document.getElementById('searchInput')?.focus(),150)}
+function focusSearch(){
+  revealAllSections();
+  setActiveNav('home');
+  const search=document.getElementById('search');
+  if(search) search.scrollIntoView({behavior:'smooth',block:'start'});
+  setTimeout(()=>document.getElementById('searchInput')?.focus(),450);
+}
+window.addEventListener('popstate',()=>{
+  const page=(window.location.hash||'#home').slice(1);
+  showPage(['home','shop','promos','about'].includes(page)?page:'home',{updateHash:false});
+});
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),2400)}
 function saveCart(){localStorage.setItem('lus_cart',JSON.stringify(cart));updateCartCount();renderCart()}
 function updateCartCount(){document.getElementById('cartCount').textContent=cart.reduce((s,i)=>s+i.qty,0)}
@@ -444,7 +479,15 @@ function addBundle(){const a=products.find(p=>p.name==='Casual Linen Blouse');co
 function setPromo(){promoShowAll=false;showPage('promos')}
 
 (async()=>{
-  try{await loadStore();renderProducts();renderPromos();renderCart();updateCartCount();showPage('home');}
+  try{
+    await loadStore();
+    renderProducts();
+    renderPromos();
+    renderCart();
+    updateCartCount();
+    const initialPage=(window.location.hash||'#home').slice(1);
+    showPage(['home','shop','promos','about'].includes(initialPage)?initialPage:'home',{updateHash:false});
+  }
   catch(e){console.error(e);toast('Supabase is not connected yet. Please finish config.js setup.')}
 })();
 lucide.createIcons();
