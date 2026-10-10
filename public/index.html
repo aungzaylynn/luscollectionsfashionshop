@@ -264,11 +264,6 @@
           <p class="mt-3 sm:mt-4 text-sm sm:text-base leading-7 sm:leading-8 text-stone-700">တောင်ကြီးမြို့တွင်းအိမ်ရောက်ငွေချေရပါတယ်ရှင့်။ တောင်ကြီးမြို့ကဘဲဆိုရင် ဆိုင်မှာစိတ်တိုင်းကျလာရောက်ရွေးချယ်ဝတ်ကြည့်ပြီး အကြိုက်တွေ့မှအားပေးလို့ရပါတယ်ရှင့်။ အခြားသောမြို့များကတော့ငွေကြိုလွဲရပါမယ်ရှင့်။ ငွေလွဲဝင်ပြီးနောက်တစ်ရက် သက်ဆိုင်ရာ ကားဂိတ် (သို့) အိမ်အရောက်ပို့ Delivery စနစ်နဲ့ပို့ဆောင်ပေးပါတယ်နော်။</p>
           <div class="mt-5 border-t border-stone-200 pt-4">
             <p class="font-display text-base sm:text-lg font-bold">𝐓𝐡𝐚𝐧𝐤𝐬 𝐟𝐨𝐫 𝐬𝐡𝐨𝐩𝐩𝐢𝐧𝐠 𝐰𝐢𝐭𝐡 𝐋𝐮’𝐬 ♥️</p>
-            <div class="mt-3 flex flex-wrap gap-2 text-xs sm:text-sm font-semibold text-rose-600">
-              <span class="rounded-full bg-rose-50 border border-rose-100 px-3 py-1.5">#𝐢𝐧𝐬𝐭𝐨𝐜𝐤</span>
-              <span class="rounded-full bg-rose-50 border border-rose-100 px-3 py-1.5">#𝐭𝐚𝐮𝐧𝐠𝐠𝐲𝐢</span>
-              <span class="rounded-full bg-rose-50 border border-rose-100 px-3 py-1.5">#𝐥𝐮’𝐬𝐜𝐨𝐥𝐥𝐞𝐜𝐭𝐢𝐨𝐧𝐬</span>
-            </div>
           </div>
         </div>
 
@@ -368,11 +363,11 @@ function applySettings(){
   const social=document.getElementById('socialLinks');
   if(social) {
     const socialItems=[
-      {name:'Facebook',url:'https://www.facebook.com/luscollections',src:'https://cdn.simpleicons.org/facebook/1877F2',bg:'bg-white border-stone-200'},
-      {name:'TikTok',url:'https://tiktok.com/@lucollections?_r=1&_t=ZS-99QJwRSzUsG',src:'https://cdn.simpleicons.org/tiktok/FFFFFF',bg:'bg-black border-black'},
-      {name:'Viber',url:'viber://chat?number=%2B959428326702',src:'https://cdn.simpleicons.org/viber/FFFFFF',bg:'bg-[#7360F2] border-[#7360F2]'}
+      {name:'Facebook',url:settings.facebook&&settings.facebook!=='#'?settings.facebook:'https://www.facebook.com/luscollections',bg:'bg-white border-stone-200',svg:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#1877F2" d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.413c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.973h-1.514c-1.491 0-1.956.931-1.956 1.886v2.262h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>'},
+      {name:'TikTok',url:settings.tiktok&&settings.tiktok!=='#'?settings.tiktok:'https://tiktok.com/@lucollections?_r=1&_t=ZS-99QJwRSzUsG',bg:'bg-black border-black',svg:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#25F4EE" d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.32V2h-3.7v14.67a2.9 2.9 0 1 1-2.9-2.9c.3 0 .6.05.88.14v-3.78a6.7 6.7 0 1 0 5.72 6.62V9.28a8.46 8.46 0 0 0 4.95 1.59V7.18c-.4 0-.8-.17-1.18-.49z"/><path fill="#fff" d="M16.1 2h-3.7v14.67a2.9 2.9 0 1 1-2.9-2.9c.3 0 .6.05.88.14v-2.65a6.7 6.7 0 1 0 3.27 5.73V6.1a8.46 8.46 0 0 0 4.95 1.59V4.1a4.82 4.82 0 0 1-2.5-2.1z"/></svg>'},
+      {name:'Viber',url:settings.viber&&settings.viber!=='#'?(/^(https?:|viber:)/i.test(settings.viber)?settings.viber:'viber://chat?number=%2B'+settings.viber.replace(/\D/g,'')):'viber://chat?number=%2B959428326702',bg:'bg-[#7360F2] border-[#7360F2]',svg:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M18.9 2.2C15.1-.2 8.8-.2 5 2.2 1.2 4.6.6 9.5 1.6 14.1c.5 2.1 1.6 3.6 3.5 4.7v3.1c0 .8.9 1.2 1.5.7l2.8-2.2c2.2.4 4.6.3 6.6-.3 4.1-1.2 6.1-4.2 6.4-8.6.3-4.1-.9-7.4-3.5-9.3zM7.1 5.7c.3-.3.8-.3 1.1 0l1.5 1.8c.3.3.2.8-.1 1.1l-.7.6c.8 1.5 2 2.7 3.5 3.5l.6-.7c.3-.3.8-.4 1.1-.1l1.8 1.5c.3.3.3.8 0 1.1l-.8.8c-.5.5-1.3.7-2 .4-3.3-1.3-5.8-3.8-7.1-7.1-.3-.7-.1-1.5.4-2zM12 4.5c3.4 0 6.2 2.8 6.2 6.2h-1.5c0-2.6-2.1-4.7-4.7-4.7V4.5z"/></svg>'}
     ];
-    social.innerHTML=socialItems.map(x=>`<a href="${x.url}" target="_blank" rel="noopener noreferrer" aria-label="Open Lu's Collections on ${x.name}" title="${x.name}" class="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full border ${x.bg} shadow-sm hover:-translate-y-0.5 hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"><img src="${x.src}" alt="${x.name} official logo" class="w-6 h-6 sm:w-7 sm:h-7 object-contain" loading="lazy"></a>`).join('');
+    social.innerHTML=socialItems.map(x=>`<a href="${x.url}" target="_blank" rel="noopener noreferrer" aria-label="Open Lu's Collections on ${x.name}" title="${x.name}" class="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full border ${x.bg} shadow-sm hover:-translate-y-0.5 hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"><span class="block w-6 h-6 sm:w-7 sm:h-7">${x.svg}</span></a>`).join('');
   }
   const shopName=settings.shop_name||"Lu's Collections";
   document.title=shopName+' — Fashion Catalog';
