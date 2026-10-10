@@ -7,6 +7,12 @@ module.exports = async function handler(req, res) {
   const path = requestUrl.pathname.startsWith(prefix) ? requestUrl.pathname.slice(prefix.length) : requestUrl.pathname;
   const upstream = new URL(base.replace(/\/$/, '') + (path.startsWith('/') ? path : '/' + path));
   upstream.search = requestUrl.search;
+  const forwardedSearch = new URLSearchParams(requestUrl.search);
+forwardedSearch.delete('path');
+forwardedSearch.delete('__path');
+
+const queryString = forwardedSearch.toString();
+upstream.search = queryString ? `?${queryString}` : '';
   const headers = new Headers();
   for (const [key, value] of Object.entries(req.headers)) {
     if (!value || HOP_BY_HOP.has(key.toLowerCase()) || key.toLowerCase() === 'content-length') continue;
