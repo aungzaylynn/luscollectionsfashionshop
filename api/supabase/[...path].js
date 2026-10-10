@@ -6,7 +6,6 @@ module.exports = async function handler(req, res) {
   const prefix = '/api/supabase';
   const path = requestUrl.pathname.startsWith(prefix) ? requestUrl.pathname.slice(prefix.length) : requestUrl.pathname;
   const upstream = new URL(base.replace(/\/$/, '') + (path.startsWith('/') ? path : '/' + path));
-  upstream.search = requestUrl.search;
   const forwardedSearch = new URLSearchParams(requestUrl.search);
 forwardedSearch.delete('path');
 forwardedSearch.delete('__path');
