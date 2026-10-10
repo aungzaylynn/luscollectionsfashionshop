@@ -42,12 +42,8 @@
   <!-- Announcement -->
   <div class="bg-stone-950 text-stone-100 text-[11px] sm:text-xs overflow-hidden">
     <div class="marquee whitespace-nowrap py-2">
-      <span class="mx-8">✦ အမှာစာ ၅၀,၀၀၀ ကျပ်နှင့်အထက် ပို့ခအခမဲ့</span>
-      <span class="mx-8">✦ NEW ARRIVALS — 20% OFF</span>
-      <span class="mx-8">✦ Premium everyday wear • Plus Size available</span>
-      <span class="mx-8">✦ အမှာစာ ၅၀,၀၀၀ ကျပ်နှင့်အထက် ပို့ခအခမဲ့</span>
-      <span class="mx-8">✦ NEW ARRIVALS — 20% OFF</span>
-      <span class="mx-8">✦ Premium everyday wear • Plus Size available</span>
+      <span id="announcementText" class="mx-8">✦ အမှာစာ ၅၀,၀၀၀ ကျပ်နှင့်အထက် ပို့ခအခမဲ့ • NEW ARRIVALS — 20% OFF • Premium everyday wear • Plus Size available</span>
+      <span id="announcementTextClone" class="mx-8" aria-hidden="true">✦ အမှာစာ ၅၀,၀၀၀ ကျပ်နှင့်အထက် ပို့ခအခမဲ့ • NEW ARRIVALS — 20% OFF • Premium everyday wear • Plus Size available</span>
     </div>
   </div>
 
@@ -137,21 +133,8 @@
 
     <!-- 4. OOTD -->
     <section id="ootd" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
-      <div class="rounded-[28px] bg-rose-50 border border-rose-100 overflow-hidden grid md:grid-cols-2">
-        <div class="min-h-[340px] md:min-h-[500px]">
-          <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=85&w=1000&auto=format&fit=crop" class="w-full h-full object-cover" alt="OOTD">
-        </div>
-        <div class="p-7 sm:p-12 flex flex-col justify-center">
-          <span class="self-start bg-rose-600 text-white text-[10px] font-bold tracking-wider px-3 py-1.5 rounded-full">OOTD</span>
-          <h2 class="font-display text-3xl sm:text-4xl font-semibold mt-5">Casual elegance.</h2>
-          <p class="text-stone-600 text-sm leading-7 mt-4">ပေါ့ပါးသွက်လက်ပြီး နေ့စဉ်ဝတ်အတွက် အလွယ်တကူ match လုပ်လို့ရတဲ့ minimalist look.</p>
-          <div class="mt-6 space-y-2">
-            <div class="flex justify-between bg-white rounded-xl px-4 py-3 border border-rose-100"><span class="text-sm">Cream Silk Shirt</span><b class="text-sm">28,000 Ks</b></div>
-            <div class="flex justify-between bg-white rounded-xl px-4 py-3 border border-rose-100"><span class="text-sm">Wide Leg Trouser</span><b class="text-sm">35,000 Ks</b></div>
-          </div>
-          <button onclick="addBundle()" class="mt-5 w-full rounded-xl bg-stone-950 text-white py-3.5 text-sm font-semibold hover:bg-stone-800">Add full look • 63,000 Ks</button>
-        </div>
-      </div>
+      <div class="flex items-end justify-between gap-4 mb-6"><div><p class="text-rose-600 text-xs font-bold tracking-[.18em] uppercase">Style inspiration</p><h2 class="font-display text-3xl sm:text-4xl font-semibold mt-1">OOTD — Outfit of the Day</h2></div></div>
+      <div id="ootdContent" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"><div class="text-sm text-stone-500">Loading OOTD…</div></div>
     </section>
 
     <!-- 5. SHOP CATALOG -->
@@ -333,11 +316,14 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/config.js"></script>
 <script>
-const db = supabase.createClient(window.LUS_SUPABASE_URL, window.LUS_SUPABASE_ANON_KEY, {
+const SUPABASE_API_URL = window.LUS_SUPABASE_PROXY === false ? window.LUS_SUPABASE_URL : (window.location.origin + '/api/supabase');
+const db = supabase.createClient(SUPABASE_API_URL, window.LUS_SUPABASE_ANON_KEY, {
   auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
 });
 let products=[];
 let settings={};
+let ootdPosts=[];
+function proxyImageUrl(url){if(!url)return url;const base=String(window.LUS_SUPABASE_URL||'').replace(/\/$/,'');return base&&url.startsWith(base+'/storage/v1/')?(window.location.origin+'/api/supabase'+url.slice(base.length)):url}
 let category='All';
 let showAll=false;
 let promoShowAll=false;
@@ -350,14 +336,15 @@ const money=n=>new Intl.NumberFormat('en-US').format(Number(n||0))+' Ks';
 const catalogCategories=['All','Top & Blouse','Dresses','Pants','Skirt','Cozy & Outerwear','Plus Size','Set & Suit','Sleepwear','Other'];
 
 async function loadStore(){
-  const [{data:productData,error:pe},{data:settingData,error:se}] = await Promise.all([
+  const [{data:productData,error:pe},{data:settingData,error:se},{data:ootdData,error:oe}] = await Promise.all([
     db.from('products').select('*').eq('is_active',true).order('created_at',{ascending:false}),
-    db.from('settings').select('key,value')
+    db.from('settings').select('key,value'),
+    db.from('ootd_posts').select('*').eq('is_active',true).order('sort_order',{ascending:true}).order('created_at',{ascending:false})
   ]);
-  if(pe) throw pe; if(se) throw se;
-  products=(productData||[]).map(p=>({...p,sizes:Array.isArray(p.sizes)?p.sizes:[],colors:Array.isArray(p.colors)?p.colors:[]}));
-  settings=Object.fromEntries((settingData||[]).map(x=>[x.key,x.value]));
-  applySettings();
+  if(pe) throw pe; if(se) throw se; if(oe) throw oe;
+  products=(productData||[]).map(p=>({...p,image:proxyImageUrl(p.image),images:(Array.isArray(p.images)&&p.images.length?p.images:[p.image].filter(Boolean)).map(proxyImageUrl),sizes:Array.isArray(p.sizes)?p.sizes:[],colors:Array.isArray(p.colors)?p.colors:[]}));
+  ootdPosts=(ootdData||[]).map(p=>({...p,image_url:proxyImageUrl(p.image_url)}));settings=Object.fromEntries((settingData||[]).map(x=>[x.key,x.value]));
+  applySettings();renderOotd();
 }
 function applySettings(){
   const social=document.getElementById('socialLinks');
@@ -369,6 +356,8 @@ function applySettings(){
     ];
     social.innerHTML=socialItems.map(x=>`<a href="${x.url}" target="_blank" rel="noopener noreferrer" aria-label="Open Lu's Collections on ${x.name}" title="${x.name}" class="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full border ${x.bg} shadow-sm hover:-translate-y-0.5 hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"><span class="block w-6 h-6 sm:w-7 sm:h-7">${x.svg}</span></a>`).join('');
   }
+  const announcement=(settings.announcement_text||'✦ အမှာစာ ၅၀,၀၀၀ ကျပ်နှင့်အထက် ပို့ခအခမဲ့ • NEW ARRIVALS — 20% OFF • Premium everyday wear • Plus Size available').trim();
+  ['announcementText','announcementTextClone'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=announcement});
   const shopName=settings.shop_name||"Lu's Collections";
   document.title=shopName+' — Fashion Catalog';
 }
@@ -480,7 +469,9 @@ function renderCart(){
 }
 function openCart(){document.getElementById('cartOverlay').classList.remove('hidden');requestAnimationFrame(()=>document.getElementById('cartDrawer').classList.remove('closed'));renderCart()}
 function closeCart(){document.getElementById('cartDrawer').classList.add('closed');setTimeout(()=>document.getElementById('cartOverlay').classList.add('hidden'),250)}
-function openProduct(id){const p=products.find(x=>x.id===id);if(!p)return;selectedSize=p.sizes?.[0]||'';selectedColor=p.colors?.[0]||'';document.getElementById('productDetail').innerHTML=`<div class="grid md:grid-cols-2"><div class="aspect-[4/5]"><img src="${p.image}" class="w-full h-full object-cover"></div><div class="p-6 sm:p-9 flex flex-col"><div class="flex justify-between"><div><p class="text-rose-600 text-xs font-bold tracking-wider uppercase">${p.category}</p><h2 class="font-display text-3xl font-semibold mt-2">${p.name}</h2></div><button onclick="closeProduct()" class="p-2">×</button></div><div class="mt-4"><b class="text-xl">${money(p.price)}</b>${p.old_price?` <span class="text-sm text-stone-400 line-through ml-2">${money(p.old_price)}</span>`:''}</div><p class="text-sm text-stone-600 leading-7 mt-5">${p.description||''}</p><div class="mt-7"><label class="text-xs font-bold uppercase tracking-wider">Size</label><div class="flex flex-wrap gap-2 mt-2">${(p.sizes||[]).map(s=>`<button onclick="selectSize('${s}',this)" class="sizeOpt px-4 py-2 rounded-lg border text-xs ${s===selectedSize?'bg-stone-950 text-white':''}">${s}</button>`).join('')}</div></div><div class="mt-5"><label class="text-xs font-bold uppercase tracking-wider">Color</label><div class="flex flex-wrap gap-2 mt-2">${(p.colors||[]).map(c=>`<button onclick="selectColor('${c}',this)" class="px-4 py-2 rounded-lg border text-xs ${c===selectedColor?'bg-stone-950 text-white':''}">${c}</button>`).join('')}</div></div><button ${p.stock<=0?'disabled':''} onclick="addToCart(${p.id});closeProduct()" class="mt-auto pt-6 disabled:opacity-40"><span class="block w-full py-3.5 rounded-xl bg-stone-950 text-white text-sm font-semibold">${p.stock<=0?'Sold out':'Add to bag • '+money(p.price)}</span></button></div></div>`;document.getElementById('productModal').classList.remove('hidden')}
+function openProduct(id){const p=products.find(x=>x.id===id);if(!p)return;selectedSize=p.sizes?.[0]||'';selectedColor=p.colors?.[0]||'';const gallery=p.images?.length?p.images:[p.image];const galleryHtml=`<div><div class="aspect-[4/5] bg-stone-100"><img id="detailMainImage" src="${gallery[0]}" class="w-full h-full object-cover"></div>${gallery.length>1?`<div class="flex gap-2 p-2 overflow-x-auto">${gallery.map((u,i)=>`<button onclick="selectProductImage(${JSON.stringify(u).replace(/"/g,'&quot;')})" class="shrink-0"><img src="${u}" class="w-14 h-16 object-cover rounded-lg border"></button>`).join('')}</div>`:''}</div>`;document.getElementById('productDetail').innerHTML=`<div class="grid md:grid-cols-2">${galleryHtml}<div class="p-6 sm:p-9 flex flex-col"><div class="flex justify-between"><div><p class="text-rose-600 text-xs font-bold tracking-wider uppercase">${p.category}</p><h2 class="font-display text-3xl font-semibold mt-2">${p.name}</h2></div><button onclick="closeProduct()" class="p-2">×</button></div><div class="mt-4"><b class="text-xl">${money(p.price)}</b>${p.old_price?` <span class="text-sm text-stone-400 line-through ml-2">${money(p.old_price)}</span>`:''}</div><p class="text-sm text-stone-600 leading-7 mt-5">${p.description||''}</p><div class="mt-7"><label class="text-xs font-bold uppercase tracking-wider">Size</label><div class="flex flex-wrap gap-2 mt-2">${(p.sizes||[]).map(s=>`<button onclick="selectSize('${s}',this)" class="sizeOpt px-4 py-2 rounded-lg border text-xs ${s===selectedSize?'bg-stone-950 text-white':''}">${s}</button>`).join('')}</div></div><div class="mt-5"><label class="text-xs font-bold uppercase tracking-wider">Color</label><div class="flex flex-wrap gap-2 mt-2">${(p.colors||[]).map(c=>`<button onclick="selectColor('${c}',this)" class="px-4 py-2 rounded-lg border text-xs ${c===selectedColor?'bg-stone-950 text-white':''}">${c}</button>`).join('')}</div></div><button ${p.stock<=0?'disabled':''} onclick="addToCart(${p.id});closeProduct()" class="mt-auto pt-6 disabled:opacity-40"><span class="block w-full py-3.5 rounded-xl bg-stone-950 text-white text-sm font-semibold">${p.stock<=0?'Sold out':'Add to bag • '+money(p.price)}</span></button></div></div>`;document.getElementById('productModal').classList.remove('hidden')}
+function selectProductImage(url){const el=document.getElementById('detailMainImage');if(el)el.src=url}
+function renderOotd(){const el=document.getElementById('ootdContent');if(!el)return;if(!ootdPosts.length){el.innerHTML='<div class="col-span-full text-sm text-stone-500">OOTD အသစ်များ မကြာမီ တင်ပေးပါမယ်။</div>';return}el.innerHTML=ootdPosts.map(p=>`<article class="rounded-2xl overflow-hidden border border-stone-200 bg-white"><img src="${p.image_url}" alt="${p.title}" class="w-full aspect-[4/5] object-cover"><div class="p-5"><span class="inline-flex bg-rose-600 text-white text-[10px] font-bold tracking-wider px-3 py-1.5 rounded-full">OOTD</span><h3 class="font-display text-xl font-semibold mt-3">${p.title}</h3><p class="text-sm text-stone-600 leading-6 mt-2 whitespace-pre-line">${p.caption||''}</p></div></article>`).join('')}
 function selectSize(v,e){selectedSize=v;e.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('bg-stone-950','text-white'));e.classList.add('bg-stone-950','text-white')}
 function selectColor(v,e){selectedColor=v;e.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('bg-stone-950','text-white'));e.classList.add('bg-stone-950','text-white')}
 function closeProduct(){document.getElementById('productModal').classList.add('hidden')}
