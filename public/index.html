@@ -298,13 +298,13 @@
         <input required id="customerName" placeholder="Customer name" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200">
         <input required id="customerPhone" placeholder="Phone number" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200">
         <input id="customerEmail" type="email" placeholder="Email (optional)" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200">
-        <textarea required id="customerAddress" rows="3" placeholder="Delivery address" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200"></textarea>
+        <textarea required id="customerAddress" oninput="updateDeliveryOptions()" rows="3" placeholder="Delivery address" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200"></textarea>
         <select id="paymentMethod" onchange="updatePaymentHint()" class="w-full border border-stone-200 rounded-xl px-4 py-3">
-          <option>Cash on Delivery</option><option>KBZPay</option><option>WavePay</option>
+          <option value="KBZPay">KPay</option><option value="Cash on Delivery">Cash on Delivery (Taunggyi only)</option>
         </select>
         <div id="paymentHint" class="rounded-xl bg-rose-50 text-rose-900 p-4 text-xs leading-6 hidden"></div>
         <input id="paymentReference" placeholder="Payment transaction ID / reference (optional)" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200">
-        <textarea id="customerNote" rows="2" placeholder="Order note (optional)" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200"></textarea>
+        <label class="block text-xs text-stone-600">KPay transaction screenshot (if already paid)<input id="paymentScreenshot" type="file" accept="image/*" class="block w-full mt-2 text-sm"></label><textarea id="customerNote" rows="2" placeholder="Order note (optional)" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200"></textarea>
         <div class="rounded-xl bg-stone-50 p-4 flex justify-between"><span class="text-sm">Order total</span><b id="checkoutTotal"></b></div>
         <button class="w-full py-3.5 rounded-xl bg-rose-600 text-white font-semibold hover:bg-rose-700">Place order</button>
       </form>
@@ -469,24 +469,38 @@ function renderCart(){
 }
 function openCart(){document.getElementById('cartOverlay').classList.remove('hidden');requestAnimationFrame(()=>document.getElementById('cartDrawer').classList.remove('closed'));renderCart()}
 function closeCart(){document.getElementById('cartDrawer').classList.add('closed');setTimeout(()=>document.getElementById('cartOverlay').classList.add('hidden'),250)}
-function openProduct(id){const p=products.find(x=>x.id===id);if(!p)return;selectedSize=p.sizes?.[0]||'';selectedColor=p.colors?.[0]||'';const gallery=p.images?.length?p.images:[p.image];const galleryHtml=`<div><div class="aspect-[4/5] bg-stone-100"><img id="detailMainImage" src="${gallery[0]}" class="w-full h-full object-cover"></div>${gallery.length>1?`<div class="flex gap-2 p-2 overflow-x-auto">${gallery.map((u,i)=>`<button onclick="selectProductImage(${JSON.stringify(u).replace(/"/g,'&quot;')})" class="shrink-0"><img src="${u}" class="w-14 h-16 object-cover rounded-lg border"></button>`).join('')}</div>`:''}</div>`;document.getElementById('productDetail').innerHTML=`<div class="grid md:grid-cols-2">${galleryHtml}<div class="p-6 sm:p-9 flex flex-col"><div class="flex justify-between"><div><p class="text-rose-600 text-xs font-bold tracking-wider uppercase">${p.category}</p><h2 class="font-display text-3xl font-semibold mt-2">${p.name}</h2></div><button onclick="closeProduct()" class="p-2">×</button></div><div class="mt-4"><b class="text-xl">${money(p.price)}</b>${p.old_price?` <span class="text-sm text-stone-400 line-through ml-2">${money(p.old_price)}</span>`:''}</div><p class="text-sm text-stone-600 leading-7 mt-5">${p.description||''}</p><div class="mt-7"><label class="text-xs font-bold uppercase tracking-wider">Size</label><div class="flex flex-wrap gap-2 mt-2">${(p.sizes||[]).map(s=>`<button onclick="selectSize('${s}',this)" class="sizeOpt px-4 py-2 rounded-lg border text-xs ${s===selectedSize?'bg-stone-950 text-white':''}">${s}</button>`).join('')}</div></div><div class="mt-5"><label class="text-xs font-bold uppercase tracking-wider">Color</label><div class="flex flex-wrap gap-2 mt-2">${(p.colors||[]).map(c=>`<button onclick="selectColor('${c}',this)" class="px-4 py-2 rounded-lg border text-xs ${c===selectedColor?'bg-stone-950 text-white':''}">${c}</button>`).join('')}</div></div><button ${p.stock<=0?'disabled':''} onclick="addToCart(${p.id});closeProduct()" class="mt-auto pt-6 disabled:opacity-40"><span class="block w-full py-3.5 rounded-xl bg-stone-950 text-white text-sm font-semibold">${p.stock<=0?'Sold out':'Add to bag • '+money(p.price)}</span></button></div></div>`;document.getElementById('productModal').classList.remove('hidden')}
+function openProduct(id){const p=products.find(x=>x.id===id);if(!p)return;selectedSize=p.sizes?.[0]||'';selectedColor=p.colors?.[0]||'';const gallery=p.images?.length?p.images:[p.image];const galleryHtml=`<div><div class="aspect-[4/5] bg-stone-100"><img id="detailMainImage" src="${gallery[0]}" class="w-full h-full object-cover"></div>${gallery.length>1?`<div class="flex gap-2 p-2 overflow-x-auto">${gallery.map((u,i)=>`<button onclick="selectProductImage(${JSON.stringify(u).replace(/"/g,'&quot;')})" class="shrink-0"><img src="${u}" class="w-14 h-16 object-cover rounded-lg border"></button>`).join('')}</div>`:''}</div>`;document.getElementById('productDetail').innerHTML=`<div class="grid md:grid-cols-2">${galleryHtml}<div class="p-6 sm:p-9 flex flex-col"><div class="flex justify-between"><div><p class="text-rose-600 text-xs font-bold tracking-wider uppercase">${p.category}</p><h2 class="font-display text-3xl font-semibold mt-2">${p.name}</h2></div><button onclick="closeProduct()" class="p-2">×</button></div><div class="mt-4"><b class="text-xl">${money(p.price)}</b>${p.old_price?` <span class="text-sm text-stone-400 line-through ml-2">${money(p.old_price)}</span>`:''}</div><p class="text-sm text-stone-600 leading-7 mt-5">${p.description||''}</p><div class="mt-7"><label class="text-xs font-bold uppercase tracking-wider">Size</label><div class="flex flex-wrap gap-2 mt-2">${(p.sizes||[]).map(s=>`<button onclick="selectSize('${s}',this)" class="sizeOpt px-4 py-2 rounded-lg border text-xs ${s===selectedSize?'bg-stone-950 text-white':''}">${s}</button>`).join('')}</div></div><div class="mt-5"><label class="text-xs font-bold uppercase tracking-wider">Color</label><div class="flex flex-wrap gap-2 mt-2">${(p.colors||[]).map(c=>`<button onclick="selectColor('${c}',this)" class="px-4 py-2 rounded-lg border text-xs ${c===selectedColor?'bg-stone-950 text-white':''}">${c}</button>`).join('')}</div></div><button ${p.stock<=0?'disabled':''} onclick="addToCart(${p.id});closeProduct()" class="mt-auto pt-6 disabled:opacity-40"><span class="block w-full py-3.5 rounded-xl bg-stone-950 text-white text-sm font-semibold">${p.stock<=0?'Sold out':'Add to bag • '+money(p.price)}</span></button><button ${p.stock<=0?'disabled':''} onclick="orderNow(${p.id})" class="mt-2 w-full py-3 rounded-xl border border-rose-300 text-rose-700 text-sm font-semibold">Order Now</button><a href="https://viber.me/${String(settings.viber||'959428326702').replace(/\\D/g,'')}" target="_blank" rel="noopener" class="mt-2 block text-center w-full py-3 rounded-xl bg-violet-600 text-white text-sm font-semibold">Order via Viber</a></div></div>`;document.getElementById('productModal').classList.remove('hidden')}
+function orderNow(id){const p=products.find(x=>x.id===id);if(!p||p.stock<=0)return;cart=[];cart.push({key:`${id}-${p.sizes?.[0]||''}-${p.colors?.[0]||''}`,id,qty:1,size:p.sizes?.[0]||'',color:p.colors?.[0]||''});saveCart();renderCart();updateCartCount();closeProduct();openCheckout()}
 function selectProductImage(url){const el=document.getElementById('detailMainImage');if(el)el.src=url}
 function renderOotd(){const el=document.getElementById('ootdContent');if(!el)return;if(!ootdPosts.length){el.innerHTML='<div class="col-span-full text-sm text-stone-500">OOTD အသစ်များ မကြာမီ တင်ပေးပါမယ်။</div>';return}el.innerHTML=ootdPosts.map(p=>`<article class="rounded-2xl overflow-hidden border border-stone-200 bg-white"><img src="${p.image_url}" alt="${p.title}" class="w-full aspect-[4/5] object-cover"><div class="p-5"><span class="inline-flex bg-rose-600 text-white text-[10px] font-bold tracking-wider px-3 py-1.5 rounded-full">OOTD</span><h3 class="font-display text-xl font-semibold mt-3">${p.title}</h3><p class="text-sm text-stone-600 leading-6 mt-2 whitespace-pre-line">${p.caption||''}</p></div></article>`).join('')}
 function selectSize(v,e){selectedSize=v;e.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('bg-stone-950','text-white'));e.classList.add('bg-stone-950','text-white')}
 function selectColor(v,e){selectedColor=v;e.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('bg-stone-950','text-white'));e.classList.add('bg-stone-950','text-white')}
 function closeProduct(){document.getElementById('productModal').classList.add('hidden')}
+function isTaunggyiAddress(value){return /taunggyi|တောင်ကြီး/i.test(String(value||''))}
+function updateDeliveryOptions(){
+  const address=document.getElementById('customerAddress').value;
+  const taunggyi=isTaunggyiAddress(address);
+  const sel=document.getElementById('paymentMethod');
+  const cod=[...sel.options].find(o=>o.value==='Cash on Delivery');
+  if(cod)cod.disabled=!taunggyi;
+  if(!taunggyi && sel.value==='Cash on Delivery')sel.value='KBZPay';
+  document.getElementById('checkoutTotal').textContent=money(cartTotal()+(taunggyi?0:Number(settings.other_city_delivery_fee||settings.delivery_fee||2500)));
+  updatePaymentHint();
+}
 function updatePaymentHint(){
   const m=document.getElementById('paymentMethod').value;
   const hint=document.getElementById('paymentHint');
-  if(m==='KBZPay' && settings.kbzpay){hint.innerHTML=`KBZPay: <b>${settings.kbzpay}</b><br>ငွေလွှဲပြီးရင် transaction/reference နံပါတ်ကို အောက်မှာထည့်ပေးပါ။`;hint.classList.remove('hidden')}
-  else if(m==='WavePay' && settings.wavepay){hint.innerHTML=`WavePay: <b>${settings.wavepay}</b><br>ငွေလွှဲပြီးရင် transaction/reference နံပါတ်ကို အောက်မှာထည့်ပေးပါ။`;hint.classList.remove('hidden')}
+  if(m==='KBZPay'){hint.innerHTML=`Order တင်ပြီးနောက် Pending ဖြစ်နေပါမယ်။ Admin မှ Confirm လုပ်ပြီး KPay အချက်အလက်ပေးမှ ငွေလွှဲပေးပါ။`;hint.classList.remove('hidden')}
   else {hint.classList.add('hidden');hint.innerHTML=''}
 }
-function openCheckout(){if(!cart.length){toast('Your bag is empty');return}closeCart();document.getElementById('checkoutTotal').textContent=money(cartTotal()+Number(settings.delivery_fee||0));document.getElementById('checkoutModal').classList.remove('hidden');updatePaymentHint()}
+function openCheckout(){if(!cart.length){toast('Your bag is empty');return}closeCart();document.getElementById('paymentScreenshot').value='';document.getElementById('checkoutModal').classList.remove('hidden');updateDeliveryOptions()}
 function closeCheckout(){document.getElementById('checkoutModal').classList.add('hidden')}
 async function placeOrder(e){
   e.preventDefault();
   try{
+    const address=document.getElementById('customerAddress').value;
+    const taunggyi=isTaunggyiAddress(address);
+    if(!taunggyi && paymentMethod.value==='Cash on Delivery'){paymentMethod.value='KBZPay';throw new Error('တောင်ကြီးမြို့အတွက်သာ COD ရွေးနိုင်ပါတယ်။ KPay ကိုရွေးပေးပါ။')}
     const items=cart.map(i=>({productId:i.id,qty:i.qty,size:i.size||'',color:i.color||''}));
     const {data,error}=await db.rpc('create_order',{
       p_customer_name:customerName.value,
@@ -496,10 +510,19 @@ async function placeOrder(e){
       p_note:customerNote.value||'',
       p_payment_method:paymentMethod.value,
       p_payment_reference:paymentReference.value||'',
-      p_items:items
+      p_items:items,
+      p_delivery_fee:taunggyi?0:Number(settings.other_city_delivery_fee||settings.delivery_fee||2500)
     });
     if(error) throw error;
     const phone=customerPhone.value;
+    const proof=document.getElementById('paymentScreenshot').files[0];
+    if(proof && data?.orderNo){
+      const ext=(proof.name.split('.').pop()||'jpg').toLowerCase();
+      const path=`${data.orderNo}/${Date.now()}.${ext}`;
+      const {error:upErr}=await db.storage.from('payment-proofs').upload(path,proof,{upsert:false,contentType:proof.type});
+      if(upErr) console.warn('Screenshot upload failed:',upErr.message);
+      else await db.rpc('attach_payment_proof',{p_order_no:data.orderNo,p_phone:phone,p_path:path});
+    }
     cart=[];saveCart();closeCheckout();
     await loadStore();renderProducts();renderPromos();
     toast(`Order ${data.orderNo} received`);
@@ -509,6 +532,16 @@ async function placeOrder(e){
 function addBundle(){const a=products.find(p=>p.name==='Casual Linen Blouse');const b=products.find(p=>p.name==='Wide Leg Trouser');if(a)addToCart(a.id);if(b)addToCart(b.id)}
 function setPromo(){promoShowAll=false;showPage('promos')}
 
+let storeRefreshTimer;
+function enableStoreRealtime(){
+  db.channel('lus-store-live')
+    .on('postgres_changes',{event:'*',schema:'public',table:'products'},()=>scheduleStoreRefresh())
+    .on('postgres_changes',{event:'*',schema:'public',table:'settings'},()=>scheduleStoreRefresh())
+    .on('postgres_changes',{event:'*',schema:'public',table:'ootd_posts'},()=>scheduleStoreRefresh())
+    .subscribe();
+}
+function scheduleStoreRefresh(){clearTimeout(storeRefreshTimer);storeRefreshTimer=setTimeout(async()=>{try{await loadStore();renderProducts();renderPromos();renderOotd()}catch(e){console.warn('Live refresh failed',e)}},350)}
+enableStoreRealtime();
 (async()=>{
   try{
     await loadStore();
