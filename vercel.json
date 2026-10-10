@@ -1,4 +1,3 @@
 {
-  "version": 2,
-  "rewrites": [{ "source": "/api/supabase/:path*", "destination": "/api/supabase?__path=:path*" }]
+  "version": 2
 }
