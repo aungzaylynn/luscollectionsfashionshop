@@ -113,7 +113,7 @@
       </div>
       <div id="searchBox" class="relative">
         <i data-lucide="search" class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400"></i>
-        <input id="searchInput" oninput="showAll=false; renderProducts()" type="search"
+        <input id="searchInput" oninput="showAll=true; renderProducts()" type="search"
           placeholder="Search dresses, tops, sleepwear..."
           class="w-full pl-12 pr-5 py-4 sm:py-5 rounded-2xl bg-white border border-stone-200 outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 shadow-sm text-sm sm:text-base">
       </div>
@@ -325,7 +325,7 @@ let settings={};
 let ootdPosts=[];
 function proxyImageUrl(url){if(!url)return url;const base=String(window.LUS_SUPABASE_URL||'').replace(/\/$/,'');return base&&url.startsWith(base+'/storage/v1/')?(window.location.origin+'/api/supabase'+url.slice(base.length)):url}
 let category='All';
-let showAll=false;
+let showAll=true;
 let promoShowAll=false;
 let currentPage='home';
 let cart=JSON.parse(localStorage.getItem('lus_cart')||'[]');
@@ -393,7 +393,7 @@ function renderProducts(){
   const na=document.getElementById('newArrivals'); if(na)na.innerHTML=products.filter(p=>p.is_featured).slice(0,4).map(card).join('');
   lucide.createIcons();
 }
-function setCategory(c){category=c;showAll=false;renderProducts();showPage('shop');}
+function setCategory(c){category=c;showAll=true;renderProducts();showPage('shop');}
 function showAllProducts(){showAll=true;showPage('shop');}
 function promoProducts(){return products.filter(p=>p.old_price);}
 function renderPromos(){
