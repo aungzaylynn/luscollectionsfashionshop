@@ -55,7 +55,7 @@
         <div class="text-[9px] tracking-[.32em] text-stone-500 -mt-1">COLLECTIONS</div>
       </a>
 
-      <nav class="hidden md:flex items-center gap-7 text-sm font-medium">
+      <nav class="flex items-center gap-3 sm:gap-5 text-xs sm:text-sm font-medium overflow-x-auto hide-scrollbar whitespace-nowrap">
         <a href="#home" data-page-nav="home" onclick="showPage('home');return false;" class="hover:text-rose-600">Home</a>
         <a href="#shop" data-page-nav="shop" onclick="showPage('shop');return false;" class="hover:text-rose-600">Shop</a>
         <a href="#promos" data-page-nav="promos" onclick="showPage('promos');return false;" class="hover:text-rose-600">Promos</a>
@@ -163,6 +163,7 @@
         </div>
       </div>
 
+      <div id="shopBackWrap" class="hidden mb-4"><button onclick="backToMain()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-stone-300 bg-white text-sm font-semibold"><i data-lucide="arrow-left" class="w-4 h-4"></i> Back to main page</button></div>
       <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"></div>
 
       <div id="viewAllWrap" class="text-center mt-8">
@@ -325,7 +326,7 @@ let settings={};
 let ootdPosts=[];
 function proxyImageUrl(url){if(!url)return url;const base=String(window.LUS_SUPABASE_URL||'').replace(/\/$/,'');return base&&url.startsWith(base+'/storage/v1/')?(window.location.origin+'/api/supabase'+url.slice(base.length)):url}
 let category='All';
-let showAll=true;
+let showAll=false;
 let promoShowAll=false;
 let currentPage='home';
 let cart=JSON.parse(localStorage.getItem('lus_cart')||'[]');
@@ -352,7 +353,7 @@ function applySettings(){
     const socialItems=[
       {name:'Facebook',url:settings.facebook&&settings.facebook!=='#'?settings.facebook:'https://www.facebook.com/luscollections',bg:'bg-white border-stone-200',svg:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#1877F2" d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.413c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.973h-1.514c-1.491 0-1.956.931-1.956 1.886v2.262h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>'},
       {name:'TikTok',url:settings.tiktok&&settings.tiktok!=='#'?settings.tiktok:'https://tiktok.com/@lucollections?_r=1&_t=ZS-99QJwRSzUsG',bg:'bg-black border-black',svg:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#25F4EE" d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.32V2h-3.7v14.67a2.9 2.9 0 1 1-2.9-2.9c.3 0 .6.05.88.14v-3.78a6.7 6.7 0 1 0 5.72 6.62V9.28a8.46 8.46 0 0 0 4.95 1.59V7.18c-.4 0-.8-.17-1.18-.49z"/><path fill="#fff" d="M16.1 2h-3.7v14.67a2.9 2.9 0 1 1-2.9-2.9c.3 0 .6.05.88.14v-2.65a6.7 6.7 0 1 0 3.27 5.73V6.1a8.46 8.46 0 0 0 4.95 1.59V4.1a4.82 4.82 0 0 1-2.5-2.1z"/></svg>'},
-      {name:'Viber',url:settings.viber&&settings.viber!=='#'?(/^(https?:|viber:)/i.test(settings.viber)?settings.viber:'viber://chat?number=%2B'+settings.viber.replace(/\D/g,'')):'viber://chat?number=%2B959428326702',bg:'bg-[#7360F2] border-[#7360F2]',svg:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M18.9 2.2C15.1-.2 8.8-.2 5 2.2 1.2 4.6.6 9.5 1.6 14.1c.5 2.1 1.6 3.6 3.5 4.7v3.1c0 .8.9 1.2 1.5.7l2.8-2.2c2.2.4 4.6.3 6.6-.3 4.1-1.2 6.1-4.2 6.4-8.6.3-4.1-.9-7.4-3.5-9.3zM7.1 5.7c.3-.3.8-.3 1.1 0l1.5 1.8c.3.3.2.8-.1 1.1l-.7.6c.8 1.5 2 2.7 3.5 3.5l.6-.7c.3-.3.8-.4 1.1-.1l1.8 1.5c.3.3.3.8 0 1.1l-.8.8c-.5.5-1.3.7-2 .4-3.3-1.3-5.8-3.8-7.1-7.1-.3-.7-.1-1.5.4-2zM12 4.5c3.4 0 6.2 2.8 6.2 6.2h-1.5c0-2.6-2.1-4.7-4.7-4.7V4.5z"/></svg>'}
+      {name:'Viber',url:'https://www.viber.com/',bg:'bg-[#7360F2] border-[#7360F2]',svg:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M18.9 2.2C15.1-.2 8.8-.2 5 2.2 1.2 4.6.6 9.5 1.6 14.1c.5 2.1 1.6 3.6 3.5 4.7v3.1c0 .8.9 1.2 1.5.7l2.8-2.2c2.2.4 4.6.3 6.6-.3 4.1-1.2 6.1-4.2 6.4-8.6.3-4.1-.9-7.4-3.5-9.3zM7.1 5.7c.3-.3.8-.3 1.1 0l1.5 1.8c.3.3.2.8-.1 1.1l-.7.6c.8 1.5 2 2.7 3.5 3.5l.6-.7c.3-.3.8-.4 1.1-.1l1.8 1.5c.3.3.3.8 0 1.1l-.8.8c-.5.5-1.3.7-2 .4-3.3-1.3-5.8-3.8-7.1-7.1-.3-.7-.1-1.5.4-2zM12 4.5c3.4 0 6.2 2.8 6.2 6.2h-1.5c0-2.6-2.1-4.7-4.7-4.7V4.5z"/></svg>'}
     ];
     social.innerHTML=socialItems.map(x=>`<a href="${x.url}" target="_blank" rel="noopener noreferrer" aria-label="Open Lu's Collections on ${x.name}" title="${x.name}" class="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full border ${x.bg} shadow-sm hover:-translate-y-0.5 hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"><span class="block w-6 h-6 sm:w-7 sm:h-7">${x.svg}</span></a>`).join('');
   }
@@ -390,11 +391,14 @@ function renderProducts(){
   document.getElementById('shopTitle').textContent=showAll?'Shop — All Products':'Shop Catalog';
   document.getElementById('productGrid').innerHTML=visible.length?visible.map(card).join(''):`<div class="col-span-full text-center py-16"><p class="font-display text-2xl">No pieces found.</p><p class="text-sm text-stone-500 mt-2">Try another search or category.</p></div>`;
   document.getElementById('viewAllWrap').classList.toggle('hidden',showAll||list.length<=6);
+  const back=document.getElementById('shopBackWrap');if(back)back.classList.toggle('hidden',!showAll);
+  const btn=document.querySelector('#viewAllWrap button');if(btn)btn.innerHTML='View All Products <i data-lucide="arrow-right" class="w-4 h-4"></i>';
   const na=document.getElementById('newArrivals'); if(na)na.innerHTML=products.filter(p=>p.is_featured).slice(0,4).map(card).join('');
   lucide.createIcons();
 }
 function setCategory(c){category=c;showAll=true;renderProducts();showPage('shop');}
-function showAllProducts(){showAll=true;showPage('shop');}
+function showAllProducts(){showAll=true;showPage('shop');document.getElementById('shop').scrollIntoView({behavior:'smooth'});}
+function backToMain(){showAll=false;category='All';promoShowAll=false;showPage('home');renderProducts();window.scrollTo({top:0,behavior:'smooth'});}
 function promoProducts(){return products.filter(p=>p.old_price);}
 function renderPromos(){
   const list=promoProducts();const visible=promoShowAll?list:list.slice(0,6);
@@ -469,6 +473,7 @@ function renderCart(){
 }
 function openCart(){document.getElementById('cartOverlay').classList.remove('hidden');requestAnimationFrame(()=>document.getElementById('cartDrawer').classList.remove('closed'));renderCart()}
 function closeCart(){document.getElementById('cartDrawer').classList.add('closed');setTimeout(()=>document.getElementById('cartOverlay').classList.add('hidden'),250)}
+function openViber(event,number){event.preventDefault();const digits=String(number||'959428326702').replace(/\D/g,'');const deep='viber://chat?number=%2B'+digits;const fallback='https://www.viber.com/';window.location.href=deep;setTimeout(()=>{if(!document.hidden)window.location.href=fallback;},1200);return false;}
 function openProduct(id){const p=products.find(x=>x.id===id);if(!p)return;selectedSize=p.sizes?.[0]||'';selectedColor=p.colors?.[0]||'';const gallery=p.images?.length?p.images:[p.image];const galleryHtml=`<div><div class="aspect-[4/5] bg-stone-100"><img id="detailMainImage" src="${gallery[0]}" class="w-full h-full object-cover"></div>${gallery.length>1?`<div class="flex gap-2 p-2 overflow-x-auto">${gallery.map((u,i)=>`<button onclick="selectProductImage(${JSON.stringify(u).replace(/"/g,'&quot;')})" class="shrink-0"><img src="${u}" class="w-14 h-16 object-cover rounded-lg border"></button>`).join('')}</div>`:''}</div>`;document.getElementById('productDetail').innerHTML=`<div class="grid md:grid-cols-2">${galleryHtml}<div class="p-6 sm:p-9 flex flex-col"><div class="flex justify-between"><div><p class="text-rose-600 text-xs font-bold tracking-wider uppercase">${p.category}</p><h2 class="font-display text-3xl font-semibold mt-2">${p.name}</h2></div><button onclick="closeProduct()" class="p-2">×</button></div><div class="mt-4"><b class="text-xl">${money(p.price)}</b>${p.old_price?` <span class="text-sm text-stone-400 line-through ml-2">${money(p.old_price)}</span>`:''}</div><p class="text-sm text-stone-600 leading-7 mt-5">${p.description||''}</p><div class="mt-7"><label class="text-xs font-bold uppercase tracking-wider">Size</label><div class="flex flex-wrap gap-2 mt-2">${(p.sizes||[]).map(s=>`<button onclick="selectSize('${s}',this)" class="sizeOpt px-4 py-2 rounded-lg border text-xs ${s===selectedSize?'bg-stone-950 text-white':''}">${s}</button>`).join('')}</div></div><div class="mt-5"><label class="text-xs font-bold uppercase tracking-wider">Color</label><div class="flex flex-wrap gap-2 mt-2">${(p.colors||[]).map(c=>`<button onclick="selectColor('${c}',this)" class="px-4 py-2 rounded-lg border text-xs ${c===selectedColor?'bg-stone-950 text-white':''}">${c}</button>`).join('')}</div></div><button ${p.stock<=0?'disabled':''} onclick="addToCart(${p.id});closeProduct()" class="mt-auto pt-6 disabled:opacity-40"><span class="block w-full py-3.5 rounded-xl bg-stone-950 text-white text-sm font-semibold">${p.stock<=0?'Sold out':'Add to bag • '+money(p.price)}</span></button><button ${p.stock<=0?'disabled':''} onclick="orderNow(${p.id})" class="mt-2 w-full py-3 rounded-xl border border-rose-300 text-rose-700 text-sm font-semibold">Order Now</button><a href="https://viber.me/${String(settings.viber||'959428326702').replace(/\\D/g,'')}" target="_blank" rel="noopener" class="mt-2 block text-center w-full py-3 rounded-xl bg-violet-600 text-white text-sm font-semibold">Order via Viber</a></div></div>`;document.getElementById('productModal').classList.remove('hidden')}
 function orderNow(id){const p=products.find(x=>x.id===id);if(!p||p.stock<=0)return;cart=[];cart.push({key:`${id}-${p.sizes?.[0]||''}-${p.colors?.[0]||''}`,id,qty:1,size:p.sizes?.[0]||'',color:p.colors?.[0]||''});saveCart();renderCart();updateCartCount();closeProduct();openCheckout()}
 function selectProductImage(url){const el=document.getElementById('detailMainImage');if(el)el.src=url}
