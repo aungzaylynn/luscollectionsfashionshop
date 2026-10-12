@@ -548,10 +548,10 @@ async function placeOrder(e){
       if(upErr) console.warn('Screenshot upload failed:',upErr.message);
       else await db.rpc('attach_payment_proof',{p_order_no:data.orderNo,p_phone:phone,p_path:path});
     }
-    cart=[];saveCart();closeCheckout();
+    saveCart();closeCheckout();
     await loadStore();renderProducts();renderPromos();
     toast(`Order ${data.orderNo} received`);
-    setTimeout(()=>alert(`Thank you!\nOrder: ${data.orderNo}\nTotal: ${money(data.total)}\nWe will contact you at ${phone}.`),250);
+    setTimeout(()=>alert(`Thank you!\nOrder: ${data.orderNo}\nTotal: ${money(data.total)}\nYour items remain in the bag while the shop confirms stock. Please do not place the same order again.\nWe will contact you at ${phone}.`),250);
   }catch(err){console.error(err);toast(err.message||'Unable to place order')}
 }
 function addBundle(){const a=products.find(p=>p.name==='Casual Linen Blouse');const b=products.find(p=>p.name==='Wide Leg Trouser');if(a)addToCart(a.id);if(b)addToCart(b.id)}
