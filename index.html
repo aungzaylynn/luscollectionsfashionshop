@@ -528,6 +528,17 @@ async function placeOrder(e){
       p_delivery_fee:taunggyi?0:Number(settings.other_city_delivery_fee||settings.delivery_fee||2500)
     });
     if(error) throw error;
+    // Notify the shop owner through Telegram after the order is successfully saved.
+    // Notification failure must not cancel the customer's order.
+    if(data?.orderNo){
+      fetch('/api/telegram/order-notification',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({orderNo:data.orderNo})
+      }).then(async r=>{
+        if(!r.ok) console.warn('Telegram order notification failed:',await r.text());
+      }).catch(err=>console.warn('Telegram order notification request failed:',err));
+    }
     const phone=customerPhone.value;
     const proof=document.getElementById('paymentScreenshot').files[0];
     if(proof && data?.orderNo){
