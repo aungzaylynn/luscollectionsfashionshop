@@ -280,6 +280,7 @@
         <button onclick="closeCart()" class="p-2 rounded-full hover:bg-stone-100"><i data-lucide="x"></i></button>
       </div>
       <div id="cartItems" class="flex-1 overflow-y-auto p-5 space-y-4"></div>
+      <div id="savedOrderShortcut" class="hidden px-5 pb-3"><button onclick="openSavedOrder()" class="w-full border border-rose-200 text-rose-700 rounded-xl py-3 font-semibold">Track my latest order</button></div>
       <div class="border-t p-5">
         <div class="flex justify-between text-sm"><span>Subtotal</span><b id="cartSubtotal">0 Ks</b></div>
         <div class="flex justify-between text-sm text-stone-500 mt-2"><span>Delivery</span><span id="deliveryFee">Calculated at checkout</span></div>
@@ -301,13 +302,11 @@
         <input required id="customerPhone" placeholder="Phone number" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200">
         <input id="customerEmail" type="email" placeholder="Email (optional)" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200">
         <textarea required id="customerAddress" oninput="updateDeliveryOptions()" rows="3" placeholder="Delivery address" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200"></textarea>
+        <div id="taunggyiFulfillmentWrap" class="hidden space-y-2"><p class="text-sm font-medium">တောင်ကြီး အော်ဒါအမျိုးအစား</p><div class="grid grid-cols-2 gap-2"><label class="border rounded-xl p-3 flex items-center gap-2"><input type="radio" name="fulfillmentMethod" value="Pickup" checked onchange="updateDeliveryOptions()"> Pick up</label><label class="border rounded-xl p-3 flex items-center gap-2"><input type="radio" name="fulfillmentMethod" value="Delivery" onchange="updateDeliveryOptions()"> Delivery</label></div></div>
         <select id="paymentMethod" onchange="updatePaymentHint()" class="w-full border border-stone-200 rounded-xl px-4 py-3">
           <option value="KBZPay">KPay</option><option value="Cash on Delivery">Cash on Delivery (Taunggyi only)</option>
-        </select>
-
-        <input id="paymentReference" placeholder="Payment transaction ID / reference (optional)" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200">
-        <label class="block text-xs text-stone-600">KPay transaction screenshot (if already paid)<input id="paymentScreenshot" type="file" accept="image/*" class="block w-full mt-2 text-sm"></label><textarea id="customerNote" rows="2" placeholder="Order note (optional)" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200"></textarea>
-        <div class="rounded-xl bg-stone-50 p-4 space-y-2 text-sm"><div class="flex justify-between"><span>Product price</span><b id="checkoutSubtotal"></b></div><div class="flex justify-between"><span>ဂိတ်ချခ / Delivery fee</span><b id="checkoutFee">0 Ks</b></div><div class="border-t pt-2 flex justify-between"><span>Order total</span><b id="checkoutTotal"></b></div></div>
+        </select><textarea id="customerNote" rows="2" placeholder="Order note (optional)" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200"></textarea>
+        <div class="rounded-xl bg-stone-50 p-4 space-y-2 text-sm"><div class="flex justify-between"><span>Product price</span><b id="checkoutSubtotal"></b></div><div class="flex justify-between"><span>ဂိတ်ချခ</span><b id="checkoutFee">0 Ks</b></div><div class="border-t pt-2 flex justify-between"><span>Order total</span><b id="checkoutTotal"></b></div></div>
         <button class="w-full py-3.5 rounded-xl bg-rose-600 text-white font-semibold hover:bg-rose-700">Place order</button>
       </form>
     </div>
@@ -478,6 +477,7 @@ function changeQty(key,d){const x=cart.find(i=>i.key===key);if(!x)return;const p
 function removeItem(key){cart=cart.filter(i=>i.key!==key);saveCart()}
 function cartTotal(){return cart.reduce((sum,i)=>{const p=products.find(x=>x.id===i.id);return sum+(p?p.price*i.qty:0)},0)}
 function renderCart(){
+  const savedOrder=JSON.parse(localStorage.getItem('lus_pending_order')||'null');const shortcut=document.getElementById('savedOrderShortcut');if(shortcut)shortcut.classList.toggle('hidden',!savedOrder?.orderNo);
   const wrap=document.getElementById('cartItems');document.getElementById('cartSubtitle').textContent=`${cart.reduce((s,i)=>s+i.qty,0)} item(s)`;
   if(!cart.length)wrap.innerHTML=`<div class="text-center py-20"><p class="font-display text-xl">Your bag is empty</p><button onclick="closeCart();showPage('shop')" class="mt-4 text-sm font-semibold underline">Start shopping</button></div>`;
   else wrap.innerHTML=cart.map(i=>{const p=products.find(x=>x.id===i.id);if(!p)return '';return `<div class="flex gap-3"><img src="${p.image}" class="w-20 h-24 object-cover rounded-xl"><div class="flex-1 min-w-0"><div class="flex justify-between gap-2"><h3 class="text-sm font-semibold truncate">${p.name}</h3><button onclick="removeItem('${i.key}')" class="text-stone-400">×</button></div><p class="text-xs text-stone-500 mt-1">${i.size} • ${i.color}</p><b class="text-sm block mt-1">${money(p.price*i.qty)}</b><div class="inline-flex items-center border rounded-lg mt-2"><button onclick="changeQty('${i.key}',-1)" class="px-2.5 py-1">−</button><span class="text-xs w-7 text-center">${i.qty}</span><button onclick="changeQty('${i.key}',1)" class="px-2.5 py-1">+</button></div></div></div>`}).join('');
@@ -501,7 +501,12 @@ function updateDeliveryOptions(){
   const cod=[...sel.options].find(o=>o.value==='Cash on Delivery');
   if(cod)cod.disabled=!taunggyi;
   if(!taunggyi && sel.value==='Cash on Delivery')sel.value='KBZPay';
-  document.getElementById('checkoutSubtotal').textContent=money(cartTotal());document.getElementById('checkoutFee').textContent=money(taunggyi?0:Number(settings.other_city_delivery_fee||2500));document.getElementById('checkoutTotal').textContent=money(cartTotal()+(taunggyi?0:Number(settings.other_city_delivery_fee||2500)));
+  const wrap=document.getElementById('taunggyiFulfillmentWrap');
+  if(wrap)wrap.classList.toggle('hidden',!taunggyi);
+  const fee=taunggyi?0:Number(settings.other_city_delivery_fee||settings.delivery_fee||2500);
+  document.getElementById('checkoutSubtotal').textContent=money(cartTotal());
+  document.getElementById('checkoutFee').textContent=money(fee);
+  document.getElementById('checkoutTotal').textContent=money(cartTotal()+fee);
   updatePaymentHint();
 }
 function updatePaymentHint(){
@@ -509,7 +514,12 @@ function updatePaymentHint(){
   // Payment instructions are shown only after admin confirmation on the order status screen.
   return;
 }
-function openCheckout(){if(!cart.length){toast('Your bag is empty');return}closeCart();document.getElementById('paymentScreenshot').value='';document.getElementById('checkoutModal').classList.remove('hidden');updateDeliveryOptions()}
+function openCheckout(){
+  const saved=JSON.parse(localStorage.getItem('lus_pending_order')||'null');
+  if(saved?.orderNo){openSavedOrder();return}
+  if(!cart.length){toast('Your bag is empty');return}
+  closeCart();document.getElementById('checkoutModal').classList.remove('hidden');updateDeliveryOptions()
+}
 function closeCheckout(){document.getElementById('checkoutModal').classList.add('hidden')}
 async function placeOrder(e){
   e.preventDefault();
@@ -523,9 +533,9 @@ async function placeOrder(e){
       p_phone:customerPhone.value,
       p_email:customerEmail.value||'',
       p_address:customerAddress.value,
-      p_note:customerNote.value||'',
+      p_note:((customerNote.value||'') + (isTaunggyiAddress(customerAddress.value) ? '\\nFulfillment: '+(document.querySelector('input[name=fulfillmentMethod]:checked')?.value||'Pickup') : '')).trim(),
       p_payment_method:paymentMethod.value,
-      p_payment_reference:paymentReference.value||'',
+      p_payment_reference:'',
       p_items:items,
       p_delivery_fee:taunggyi?0:Number(settings.other_city_delivery_fee||settings.delivery_fee||2500)
     });
@@ -542,25 +552,25 @@ async function placeOrder(e){
       }).catch(err=>console.warn('Telegram order notification request failed:',err));
     }
     const phone=customerPhone.value;
-    const proof=document.getElementById('paymentScreenshot').files[0];
-    if(proof && data?.orderNo){
-      const ext=(proof.name.split('.').pop()||'jpg').toLowerCase();
-      const path=`${data.orderNo}/${Date.now()}.${ext}`;
-      const {error:upErr}=await db.storage.from('payment-proofs').upload(path,proof,{upsert:false,contentType:proof.type});
-      if(upErr) console.warn('Screenshot upload failed:',upErr.message);
-      else await db.rpc('attach_payment_proof',{p_order_no:data.orderNo,p_phone:phone,p_path:path});
-    }
     localStorage.setItem('lus_pending_order', JSON.stringify({orderNo:data.orderNo, createdAt:Date.now(), phone}));
     closeCheckout();
+    renderCart();
     await loadStore();renderProducts();renderPromos();
     document.getElementById('customerOrderModal').classList.remove('hidden');await refreshCustomerOrder();startCustomerOrderPolling();
     toast(`Order ${data.orderNo} received`);
   }catch(err){console.error(err);toast(err.message||'Unable to place order')}
 }
 let customerOrderPoll=null;let trackedOrder=null;let trackedPhone='';
+async function openSavedOrder(){
+  const saved=JSON.parse(localStorage.getItem('lus_pending_order')||'null');
+  if(!saved?.orderNo){toast('No recent order found');return}
+  closeCart();trackedOrder=saved.orderNo;trackedPhone=saved.phone||'';
+  document.getElementById('customerOrderModal').classList.remove('hidden');
+  await refreshCustomerOrder();startCustomerOrderPolling();
+}
 function closeCustomerOrder(){document.getElementById('customerOrderModal').classList.add('hidden');if(customerOrderPoll){clearInterval(customerOrderPoll);customerOrderPoll=null}}
 function startCustomerOrderPolling(){if(customerOrderPoll)clearInterval(customerOrderPoll);customerOrderPoll=setInterval(refreshCustomerOrder,8000)}
-async function refreshCustomerOrder(){const saved=JSON.parse(localStorage.getItem('lus_pending_order')||'null');if(!saved?.orderNo)return;trackedOrder=saved.orderNo;trackedPhone=saved.phone||'';document.getElementById('trackOrderNo').textContent='Order '+trackedOrder;try{const [or,st]=await Promise.all([db.rpc('get_customer_order_status',{p_order_no:trackedOrder,p_phone:trackedPhone}),db.from('settings').select('key,value').in('key',['kbzpay','kpay_qr_url'])]);if(or.error)throw or.error;const o=Array.isArray(or.data)?or.data[0]:or.data;if(!o)return;const kv=Object.fromEntries((st.data||[]).map(x=>[x.key,x.value]));const status=String(o.order_status||'pending').toLowerCase();document.getElementById('trackStatus').textContent=status.toUpperCase();document.getElementById('trackMessage').textContent=status==='confirmed'?'Order confirmed. Please transfer payment.':status==='packing'?'Payment checked. Your package is being prepared.':status==='shipped'?'Your order has been shipped.':status==='completed'?'Order completed.':status==='cancelled'?'Order cancelled.':status==='rejected'?'This item is unavailable. Please contact the shop.':'Waiting for order confirmation.';document.getElementById('trackStep2').className='rounded-xl py-3 '+(['confirmed','packing','shipped','completed'].includes(status)?'bg-stone-950 text-white':'border');document.getElementById('trackStep3').className='rounded-xl py-3 '+(['packing','shipped','completed'].includes(status)?'bg-stone-950 text-white':'border');const pay=document.getElementById('trackPayment');pay.classList.toggle('hidden',status!=='confirmed'||String(o.payment_method).toLowerCase().includes('cash'));document.getElementById('trackKpayNumber').textContent=kv.kbzpay?'KPay account: '+kv.kbzpay:'Please contact the shop for KPay details.';const qr=document.getElementById('trackKpayQr');if(kv.kpay_qr_url){qr.src=kv.kpay_qr_url;qr.classList.remove('hidden')}else qr.classList.add('hidden');document.getElementById('packingAnimation').classList.toggle('hidden',status!=='packing');if(['packing','shipped','completed','cancelled','rejected'].includes(status)&&customerOrderPoll){clearInterval(customerOrderPoll);customerOrderPoll=null}}catch(err){console.warn('Unable to refresh customer order status:',err.message)}}
+async function refreshCustomerOrder(){const saved=JSON.parse(localStorage.getItem('lus_pending_order')||'null');if(!saved?.orderNo)return;trackedOrder=saved.orderNo;trackedPhone=saved.phone||'';document.getElementById('trackOrderNo').textContent='Order '+trackedOrder;try{const [or,st]=await Promise.all([db.rpc('get_customer_order_status',{p_order_no:trackedOrder,p_phone:trackedPhone}),db.from('settings').select('key,value').in('key',['kbzpay','kpay_qr_url'])]);if(or.error)throw or.error;const o=Array.isArray(or.data)?or.data[0]:or.data;if(!o)return;const kv=Object.fromEntries((st.data||[]).map(x=>[x.key,x.value]));const status=String(o.order_status||'pending').toLowerCase();document.getElementById('trackStatus').textContent=status.toUpperCase();document.getElementById('trackMessage').textContent=status==='confirmed'?'Order confirmed. Please transfer payment.':status==='packing'?'Payment checked. Your package is being prepared.':status==='shipped'?'Your order has been shipped.':status==='completed'?'Order completed.':status==='cancelled'?'Order cancelled.':status==='rejected'?'This item is unavailable. Please contact the shop.':'Waiting for order confirmation.';document.getElementById('trackStep2').className='rounded-xl py-3 '+(['confirmed','packing','shipped','completed'].includes(status)?'bg-stone-950 text-white':'border');document.getElementById('trackStep3').className='rounded-xl py-3 '+(['packing','shipped','completed'].includes(status)?'bg-stone-950 text-white':'border');const pay=document.getElementById('trackPayment');pay.classList.toggle('hidden',status!=='confirmed'||String(o.payment_method).toLowerCase().includes('cash'));document.getElementById('trackKpayNumber').textContent=kv.kbzpay?'KPay account: '+kv.kbzpay:'Please contact the shop for KPay details.';const qr=document.getElementById('trackKpayQr');if(kv.kpay_qr_url){qr.src=kv.kpay_qr_url;qr.classList.remove('hidden')}else qr.classList.add('hidden');document.getElementById('packingAnimation').classList.toggle('hidden',status!=='packing');if(['shipped','completed','cancelled','rejected'].includes(status)&&customerOrderPoll){clearInterval(customerOrderPoll);customerOrderPoll=null}}catch(err){console.warn('Unable to refresh customer order status:',err.message)}}
 async function submitPaymentProof(){const file=document.getElementById('trackPaymentScreenshot').files[0];const msg=document.getElementById('trackPaymentMsg');if(!file){msg.textContent='Screenshot တင်ပေးပါ။';return}msg.textContent='Uploading…';try{const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`${trackedOrder}/${Date.now()}.${ext}`;const up=await db.storage.from('payment-proofs').upload(path,file,{upsert:false,contentType:file.type});if(up.error)throw up.error;const ref=document.getElementById('trackPaymentReference').value.trim();const {error}=await db.rpc('attach_payment_proof',{p_order_no:trackedOrder,p_phone:trackedPhone,p_path:path});if(error)throw error;if(ref){const upd=await db.from('orders').update({payment_reference:ref}).eq('order_no',trackedOrder).eq('phone',trackedPhone);if(upd.error)console.warn('Reference update failed',upd.error.message)}msg.textContent='Screenshot ပို့ပြီးပါပြီ။ Admin စစ်ဆေးမှုကို စောင့်ပါ။';document.getElementById('trackPaymentScreenshot').value='';}catch(err){msg.textContent='Upload failed: '+(err.message||String(err))}}
 function addBundle(){const a=products.find(p=>p.name==='Casual Linen Blouse');const b=products.find(p=>p.name==='Wide Leg Trouser');if(a)addToCart(a.id);if(b)addToCart(b.id)}
 function setPromo(){promoShowAll=false;showPage('promos')}
