@@ -21,7 +21,7 @@ begin
  update public.orders set payment_proof_path=p_path, updated_at=now()
  where lower(order_no)=lower(trim(p_order_no))
  and regexp_replace(phone,'\D','','g')=regexp_replace(trim(p_phone),'\D','','g')
- and order_status='pending';
+ and order_status='confirmed';
  return found;
 end; $$;
 revoke all on function public.attach_payment_proof(text,text,text) from public;
@@ -141,3 +141,18 @@ revoke all on function public.create_order(text,text,text,text,text,text,text,js
 grant execute on function public.create_order(text,text,text,text,text,text,text,jsonb,integer) to anon, authenticated;
 
 -- Supabase Dashboard > Database > Publications: ensure products, settings and ootd_posts are in supabase_realtime.
+
+
+-- Secure customer-only order status lookup: requires both order number and phone.
+create or replace function public.get_customer_order_status(p_order_no text, p_phone text)
+returns table(order_no text, customer_name text, phone text, order_status text, payment_status text, payment_method text, total integer, subtotal integer, delivery_fee integer, payment_proof_path text, created_at timestamptz)
+language sql security definer set search_path=public as $$
+  select o.order_no, o.customer_name, o.phone, o.order_status, o.payment_status,
+         o.payment_method, o.total, o.subtotal, o.delivery_fee, o.payment_proof_path, o.created_at
+  from public.orders o
+  where lower(o.order_no)=lower(trim(p_order_no))
+    and regexp_replace(o.phone,'\D','','g')=regexp_replace(trim(p_phone),'\D','','g')
+  limit 1;
+$$;
+revoke all on function public.get_customer_order_status(text,text) from public;
+grant execute on function public.get_customer_order_status(text,text) to anon, authenticated;
