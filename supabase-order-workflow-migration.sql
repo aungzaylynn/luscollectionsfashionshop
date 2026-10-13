@@ -1,3 +1,4 @@
+create extension if not exists pgcrypto with schema extensions;
 -- Lu's Collections: auto-sync, delivery/payment workflow, proof upload
 alter table public.orders add column if not exists payment_proof_path text default '';
 insert into public.settings(key,value) values ('other_city_delivery_fee','2500')
@@ -40,7 +41,7 @@ create or replace function public.create_order(
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   v_subtotal integer := 0;
@@ -94,7 +95,7 @@ begin
   end loop;
 
   v_total := v_subtotal + v_delivery;
-  v_order_no := 'LUS-' || to_char(now(),'YYYYMMDD') || '-' || upper(substr(encode(gen_random_bytes(4),'hex'),1,6));
+  v_order_no := 'LUS-' || to_char(now(),'YYYYMMDD') || '-' || upper(substr(encode(extensions.gen_random_bytes(4),'hex'),1,6));
 
   insert into public.orders(
     order_no, customer_name, phone, email, address, note,

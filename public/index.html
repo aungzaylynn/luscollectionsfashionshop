@@ -292,7 +292,7 @@
   <div id="checkoutModal" class="modal hidden fixed inset-0 z-[80] bg-black/50 p-4 flex items-center justify-center" onclick="if(event.target===this)closeCheckout()">
     <div class="modal-card bg-white rounded-[24px] max-w-lg w-full max-h-[92vh] overflow-auto p-6">
       <div class="flex items-center justify-between">
-        <div><p class="text-rose-600 text-xs font-bold tracking-wider uppercase">STEP 1 / 3</p><h2 class="font-display text-3xl font-semibold">Order details</h2><p class="text-xs text-stone-500 mt-1">Step 2: wait for admin confirmation · Step 3: transfer and upload screenshot</p></div>
+        <div><p class="text-rose-600 text-xs font-bold tracking-wider uppercase">Checkout</p><h2 class="font-display text-3xl font-semibold">Complete order</h2></div>
         <button onclick="closeCheckout()" class="p-2 rounded-full hover:bg-stone-100"><i data-lucide="x"></i></button>
       </div>
       <form onsubmit="placeOrder(event)" class="mt-6 space-y-4">
@@ -303,22 +303,15 @@
         <select id="paymentMethod" onchange="updatePaymentHint()" class="w-full border border-stone-200 rounded-xl px-4 py-3">
           <option value="KBZPay">KPay</option><option value="Cash on Delivery">Cash on Delivery (Taunggyi only)</option>
         </select>
-        <div id="paymentHint" class="rounded-xl bg-rose-50 text-rose-900 p-4 text-xs leading-6 hidden"></div>
-        <textarea id="customerNote" rows="2" placeholder="Order note (optional)" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200"></textarea>
+
+        <input id="paymentReference" placeholder="Payment transaction ID / reference (optional)" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200">
+        <label class="block text-xs text-stone-600">KPay transaction screenshot (if already paid)<input id="paymentScreenshot" type="file" accept="image/*" class="block w-full mt-2 text-sm"></label><textarea id="customerNote" rows="2" placeholder="Order note (optional)" class="w-full border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-rose-200"></textarea>
         <div class="rounded-xl bg-stone-50 p-4 flex justify-between"><span class="text-sm">Order total</span><b id="checkoutTotal"></b></div>
-        <button id="placeOrderBtn" class="w-full py-3.5 rounded-xl bg-rose-600 text-white font-semibold hover:bg-rose-700">Place order · Step 1</button>
+        <button class="w-full py-3.5 rounded-xl bg-rose-600 text-white font-semibold hover:bg-rose-700">Place order</button>
       </form>
     </div>
   </div>
 
-  <div id="orderTrackerModal" class="modal hidden fixed inset-0 z-[90] bg-black/50 p-4 flex items-center justify-center">
-    <div class="modal-card bg-white rounded-[24px] max-w-lg w-full max-h-[92vh] overflow-auto p-6">
-      <div class="flex items-start justify-between gap-3"><div><p class="text-rose-600 text-xs font-bold tracking-wider uppercase">STEP 2 / 3</p><h2 class="font-display text-2xl font-semibold">Order status</h2></div><button onclick="closeOrderTracker()" class="p-2 rounded-full hover:bg-stone-100">✕</button></div>
-      <div id="orderTrackerBody" class="mt-5 text-sm text-stone-700">Loading order status…</div>
-      <div id="paymentStep" class="hidden mt-5 border-t pt-5"><p class="text-rose-600 text-xs font-bold tracking-wider uppercase">STEP 3 / 3</p><h3 class="font-semibold text-lg mt-1">Payment</h3><div id="paymentDetails" class="mt-3 rounded-xl bg-stone-50 p-4 text-sm"></div><p class="text-xs leading-5 text-rose-700 mt-3">ငွေလွဲပြီးရင် screenshot ပြပေးပါ။ 24 နာရီအတွင်း ငွေလွဲမဝင်ရင် Auto Cancel ပါရှင့်။</p><label class="block text-sm mt-4">ငွေလွှဲ screenshot<input id="paymentScreenshot" type="file" accept="image/*" class="block w-full mt-2 text-sm"></label><input id="paymentReference" placeholder="Transaction ID (optional)" class="w-full mt-3 border rounded-xl px-4 py-3"><button id="submitPaymentProofBtn" onclick="submitPaymentProof()" class="mt-3 w-full py-3 rounded-xl bg-rose-600 text-white font-semibold">Send payment screenshot</button></div>
-      <p class="text-xs text-stone-400 mt-5">Order status ကို ဒီနေရာမှာ အလိုအလျောက် update လုပ်ပေးပါမယ်။</p>
-    </div>
-  </div>
   <div id="toast" class="hidden fixed z-[100] left-1/2 bottom-7 -translate-x-1/2 bg-stone-950 text-white px-5 py-3 rounded-full text-sm shadow-xl"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -351,7 +344,7 @@ async function loadStore(){
   ]);
   if(pe) throw pe; if(se) throw se; if(oe) throw oe;
   products=(productData||[]).map(p=>({...p,image:proxyImageUrl(p.image),images:(Array.isArray(p.images)&&p.images.length?p.images:[p.image].filter(Boolean)).map(proxyImageUrl),sizes:Array.isArray(p.sizes)?p.sizes:[],colors:Array.isArray(p.colors)?p.colors:[]}));
-  ootdPosts=(ootdData||[]).map(p=>({...p,image_url:proxyImageUrl(p.image_url)}));settings=Object.fromEntries((settingData||[]).map(x=>[x.key,x.value]));window.__lusSettings=settings;
+  ootdPosts=(ootdData||[]).map(p=>({...p,image_url:proxyImageUrl(p.image_url)}));settings=Object.fromEntries((settingData||[]).map(x=>[x.key,x.value]));
   applySettings();renderOotd();
 }
 function applySettings(){
@@ -510,25 +503,56 @@ function updateDeliveryOptions(){
 }
 function updatePaymentHint(){
   const m=document.getElementById('paymentMethod').value;
-  const hint=document.getElementById('paymentHint');
-  if(m==='KBZPay'){hint.innerHTML=`Order တင်ပြီးနောက် Step 2 မှာ Admin confirmation ကို စောင့်ပေးပါ။ Admin Confirm လုပ်ပြီးမှ KPay account / QR ပေါ်လာပါမယ်။`;hint.classList.remove('hidden')}
-  else {hint.classList.add('hidden');hint.innerHTML=''}
+  // Payment instructions are shown only after admin confirmation on the order status screen.
+  return;
 }
-function openCheckout(){if(!cart.length){toast('Your bag is empty');return}const pending=JSON.parse(localStorage.getItem('lus_pending_order')||'null');if(pending?.orderNo&&pending?.phone){toast('ယခင် order ကို admin စစ်ဆေးနေဆဲပါ');closeCart();openOrderTracker(pending.orderNo,pending.phone);return}closeCart();document.getElementById('checkoutModal').classList.remove('hidden');updateDeliveryOptions()}
+function openCheckout(){if(!cart.length){toast('Your bag is empty');return}closeCart();document.getElementById('paymentScreenshot').value='';document.getElementById('checkoutModal').classList.remove('hidden');updateDeliveryOptions()}
 function closeCheckout(){document.getElementById('checkoutModal').classList.add('hidden')}
-let activeOrder={orderNo:'',phone:'',status:'',paymentMethod:''};let orderPollTimer=null;
-function closeOrderTracker(){document.getElementById('orderTrackerModal').classList.add('hidden');if(orderPollTimer){clearInterval(orderPollTimer);orderPollTimer=null}}
-function statusLabel(s){return ({pending:'Pending / Admin confirmation စောင့်နေသည်',confirmed:'Confirmed / ငွေလွှဲနိုင်ပါပြီ',packing:'Packing / ပစ္စည်းထုပ်ပိုးနေသည်',shipped:'Shipped / ပို့ဆောင်နေသည်',completed:'Completed / ပြီးဆုံး',cancelled:'Cancelled / ပယ်ဖျက်ထားသည်',rejected:'Unavailable / ပစ္စည်းမရနိုင်ပါ'})[s]||s}
-function openOrderTracker(orderNo,phone){activeOrder.orderNo=orderNo;activeOrder.phone=phone;document.getElementById('orderTrackerModal').classList.remove('hidden');document.getElementById('orderTrackerBody').innerHTML='<p>Order status ကို စစ်ဆေးနေပါတယ်…</p>';refreshOrderStatus();if(orderPollTimer)clearInterval(orderPollTimer);orderPollTimer=setInterval(refreshOrderStatus,7000)}
-async function refreshOrderStatus(){if(!activeOrder.orderNo||!activeOrder.phone)return;try{const {data,error}=await db.rpc('lookup_order',{p_order_no:activeOrder.orderNo,p_phone:activeOrder.phone});if(error)throw error;if(!data||!data.orderNo){document.getElementById('orderTrackerBody').innerHTML='<p>Order မတွေ့ပါ။ Order number နဲ့ ဖုန်းနံပါတ်ကို စစ်ပေးပါ။</p>';return}activeOrder.status=data.orderStatus;activeOrder.paymentMethod=data.paymentMethod;localStorage.setItem('lus_last_order',JSON.stringify(activeOrder));if(data.orderStatus!=='pending')localStorage.removeItem('lus_pending_order');if(data.orderStatus==='confirmed'&&cart.length){cart=[];saveCart()}const items=(data.items||[]).map(i=>`<li class="py-1">${escapeText(i.productName)} × ${Number(i.qty)}${i.size?' · Size '+escapeText(i.size):''}${i.color?' · '+escapeText(i.color):''}</li>`).join('');document.getElementById('orderTrackerBody').innerHTML=`<div class="rounded-xl bg-stone-50 p-4"><div class="flex justify-between gap-3"><span>Order no.</span><b>${escapeText(data.orderNo)}</b></div><div class="flex justify-between gap-3 mt-2"><span>Status</span><b class="text-rose-700 text-right">${statusLabel(data.orderStatus)}</b></div><div class="flex justify-between gap-3 mt-2"><span>Payment</span><b>${escapeText(data.paymentMethod||'')}</b></div><div class="flex justify-between gap-3 mt-2"><span>Payment status</span><b>${escapeText(data.paymentStatus||'pending')}</b></div><div class="flex justify-between gap-3 mt-2"><span>Total</span><b>${money(data.total)}</b></div></div><h4 class="font-semibold mt-4">Ordered items</h4><ul class="mt-1 text-xs">${items}</ul>${data.rejectionReason?`<p class="mt-3 text-rose-700">Reason: ${escapeText(data.rejectionReason)}</p>`:''}${data.orderStatus==='pending'?'<p class="mt-4 text-sm">Admin က size / color / stock ကိုစစ်ဆေးနေပါတယ်။ Confirm မလုပ်မချင်း အိတ်ထဲက ပစ္စည်းများကို ဆက်လက်သိမ်းထားပြီး ထပ်မံ order တင်ခြင်းကို ခေတ္တပိတ်ထားပါမယ်။</p>':''}${data.orderStatus==='cancelled'?'<p class="mt-3 text-rose-700">Order ကို cancel လုပ်ထားပါတယ်။</p>':''}`;const paymentStep=document.getElementById('paymentStep');paymentStep.classList.toggle('hidden',data.orderStatus!=='confirmed');if(data.orderStatus==='confirmed'){const kbz=data.paymentAccount||'';const qr=data.paymentQrUrl||'';document.getElementById('paymentDetails').innerHTML=`<p><b>KPay Account:</b> ${escapeText(kbz||'ဆိုင်ကို ဆက်သွယ်ပေးပါ')}</p>${qr?`<img src="${escapeText(proxyImageUrl(qr))}" alt="KPay QR" class="max-h-64 mx-auto mt-3 rounded-lg">`:''}<p class="mt-2">ငွေလွှဲပြီး screenshot ပို့ပေးပါ။</p>`}if(['packing','shipped','completed','cancelled','rejected'].includes(data.orderStatus)){if(orderPollTimer){clearInterval(orderPollTimer);orderPollTimer=null}}}catch(err){console.warn('Order status lookup failed',err);document.getElementById('orderTrackerBody').innerHTML='<p>Order status ကို မရယူနိုင်သေးပါ။ ခဏနေ ပြန်ကြည့်ပေးပါ။</p>'}}
-function escapeText(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-async function submitPaymentProof(){const file=document.getElementById('paymentScreenshot').files[0];if(!file){toast('ငွေလွှဲ screenshot ရွေးပေးပါ');return}if(activeOrder.status!=='confirmed'){toast('Admin Confirm ပြီးမှ ပို့နိုင်ပါတယ်');return}const btn=document.getElementById('submitPaymentProofBtn');btn.disabled=true;btn.textContent='Sending…';try{const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`${activeOrder.orderNo}/${Date.now()}.${ext}`;const {error:upErr}=await db.storage.from('payment-proofs').upload(path,file,{upsert:false,contentType:file.type});if(upErr)throw upErr;const {data,error}=await db.rpc('attach_payment_proof',{p_order_no:activeOrder.orderNo,p_phone:activeOrder.phone,p_path:path});if(error)throw error;if(data!==true)throw new Error('Screenshot မသိမ်းနိုင်ပါ။ Order status ကို ပြန်စစ်ပေးပါ။');const ref=document.getElementById('paymentReference').value.trim();if(ref)await db.rpc('attach_payment_reference',{p_order_no:activeOrder.orderNo,p_phone:activeOrder.phone,p_reference:ref});toast('Screenshot ပို့ပြီးပါပြီ');await refreshOrderStatus()}catch(err){toast(err.message||'Screenshot ပို့မရပါ')}finally{btn.disabled=false;btn.textContent='Send payment screenshot'}}
 async function placeOrder(e){
-  e.preventDefault();const btn=document.getElementById('placeOrderBtn');if(localStorage.getItem('lus_pending_order')){toast('ယခင် order ကို admin စစ်ဆေးနေဆဲပါ');return}btn.disabled=true;btn.textContent='Placing order…';
-  try{const address=document.getElementById('customerAddress').value;const taunggyi=isTaunggyiAddress(address);if(!taunggyi&&paymentMethod.value==='Cash on Delivery'){paymentMethod.value='KBZPay';throw new Error('တောင်ကြီးမြို့အတွက်သာ COD ရွေးနိုင်ပါတယ်။ KPay ကိုရွေးပေးပါ။')}const phone=customerPhone.value.trim();const items=cart.map(i=>({productId:i.id,qty:i.qty,size:i.size||'',color:i.color||''}));const {data,error}=await db.rpc('create_order',{p_customer_name:customerName.value,p_phone:phone,p_email:customerEmail.value||'',p_address:address,p_note:customerNote.value||'',p_payment_method:paymentMethod.value,p_payment_reference:'',p_items:items,p_delivery_fee:taunggyi?0:Number(settings.other_city_delivery_fee||settings.delivery_fee||2500)});if(error)throw error;if(!data?.orderNo)throw new Error('Order number မရရှိပါ');activeOrder={orderNo:data.orderNo,phone,status:'pending',paymentMethod:paymentMethod.value};localStorage.setItem('lus_pending_order',JSON.stringify(activeOrder));localStorage.setItem('lus_last_order',JSON.stringify(activeOrder));closeCheckout();toast('Order တင်ပြီးပါပြီ');openOrderTracker(data.orderNo,phone);
-    fetch('/api/telegram/order-notification',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderNo:data.orderNo})}).catch(err=>console.warn('Order notification failed',err));
-    // Keep the bag unchanged until admin confirms or rejects this order.
-  }catch(err){console.error(err);toast(err.message||'Unable to place order')}finally{btn.disabled=false;btn.textContent='Place order · Step 1'}
+  e.preventDefault();
+  try{
+    const address=document.getElementById('customerAddress').value;
+    const taunggyi=isTaunggyiAddress(address);
+    if(!taunggyi && paymentMethod.value==='Cash on Delivery'){paymentMethod.value='KBZPay';throw new Error('တောင်ကြီးမြို့အတွက်သာ COD ရွေးနိုင်ပါတယ်။ KPay ကိုရွေးပေးပါ။')}
+    const items=cart.map(i=>({productId:i.id,qty:i.qty,size:i.size||'',color:i.color||''}));
+    const {data,error}=await db.rpc('create_order',{
+      p_customer_name:customerName.value,
+      p_phone:customerPhone.value,
+      p_email:customerEmail.value||'',
+      p_address:customerAddress.value,
+      p_note:customerNote.value||'',
+      p_payment_method:paymentMethod.value,
+      p_payment_reference:paymentReference.value||'',
+      p_items:items,
+      p_delivery_fee:taunggyi?0:Number(settings.other_city_delivery_fee||settings.delivery_fee||2500)
+    });
+    if(error) throw error;
+    // Notify the shop owner through Telegram after the order is successfully saved.
+    // Notification failure must not cancel the customer's order.
+    if(data?.orderNo){
+      fetch('/api/telegram/order-notification',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({orderNo:data.orderNo})
+      }).then(async r=>{
+        if(!r.ok) console.warn('Telegram order notification failed:',await r.text());
+      }).catch(err=>console.warn('Telegram order notification request failed:',err));
+    }
+    const phone=customerPhone.value;
+    const proof=document.getElementById('paymentScreenshot').files[0];
+    if(proof && data?.orderNo){
+      const ext=(proof.name.split('.').pop()||'jpg').toLowerCase();
+      const path=`${data.orderNo}/${Date.now()}.${ext}`;
+      const {error:upErr}=await db.storage.from('payment-proofs').upload(path,proof,{upsert:false,contentType:proof.type});
+      if(upErr) console.warn('Screenshot upload failed:',upErr.message);
+      else await db.rpc('attach_payment_proof',{p_order_no:data.orderNo,p_phone:phone,p_path:path});
+    }
+    localStorage.setItem('lus_pending_order', JSON.stringify({orderNo:data.orderNo, createdAt:Date.now(), phone}));
+    closeCheckout();
+    await loadStore();renderProducts();renderPromos();
+    toast(`Order ${data.orderNo} received`);
+    setTimeout(()=>alert(`Order ${data.orderNo} ကို လက်ခံရရှိပါပြီ။\nStatus: PENDING — Admin confirmation ကို စောင့်ပေးပါ။\nBag ထဲက ပစ္စည်းတွေကို confirmation မရမချင်း ထိန်းထားပါတယ်။`),250);
+  }catch(err){console.error(err);toast(err.message||'Unable to place order')}
 }
 function addBundle(){const a=products.find(p=>p.name==='Casual Linen Blouse');const b=products.find(p=>p.name==='Wide Leg Trouser');if(a)addToCart(a.id);if(b)addToCart(b.id)}
 function setPromo(){promoShowAll=false;showPage('promos')}
@@ -550,7 +574,6 @@ enableStoreRealtime();
     renderPromos();
     renderCart();
     updateCartCount();
-    try{const saved=JSON.parse(localStorage.getItem('lus_pending_order')||localStorage.getItem('lus_last_order')||'null');if(saved?.orderNo&&saved?.phone){activeOrder=saved;openOrderTracker(saved.orderNo,saved.phone)}}catch(e){}
     const initialPage=(window.location.hash||'#home').slice(1);
     showPage(['home','shop','promos','about'].includes(initialPage)?initialPage:'home',{updateHash:false});
   }
