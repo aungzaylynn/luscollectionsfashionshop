@@ -17,3 +17,8 @@ Deployment steps:
 4. Test with a real test order and verify order status updates.
 
 Important: The browser can only show the payment account/QR after the database reports `order_status = confirmed`. The customer status lookup function must be installed via the migration. Payment proof upload does not automatically mark an order as packing; admin should check the transfer and then set status to `packing`, as requested. The 24-hour auto-cancel scheduler and stock-on-confirm transaction are not configured by this UI update.
+
+
+## v6 fixes
+- Existing latest-order tracking no longer blocks a new checkout when the cart has new items.
+- Gate fee remains 0 until a non-empty delivery address is entered; Taunggyi/TGI addresses remain fee-free.

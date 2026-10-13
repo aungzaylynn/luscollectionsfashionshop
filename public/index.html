@@ -503,7 +503,9 @@ function updateDeliveryOptions(){
   if(!taunggyi && sel.value==='Cash on Delivery')sel.value='KBZPay';
   const wrap=document.getElementById('taunggyiFulfillmentWrap');
   if(wrap)wrap.classList.toggle('hidden',!taunggyi);
-  const fee=taunggyi?0:Number(settings.other_city_delivery_fee||settings.delivery_fee||2500);
+  // Do not calculate a non-Taunggyi gate fee until the customer has entered an address.
+  const hasAddress=String(address||'').trim().length>0;
+  const fee=!hasAddress||taunggyi?0:Number(settings.other_city_delivery_fee||settings.delivery_fee||2500);
   document.getElementById('checkoutSubtotal').textContent=money(cartTotal());
   document.getElementById('checkoutFee').textContent=money(fee);
   document.getElementById('checkoutTotal').textContent=money(cartTotal()+fee);
@@ -515,9 +517,13 @@ function updatePaymentHint(){
   return;
 }
 function openCheckout(){
-  const saved=JSON.parse(localStorage.getItem('lus_pending_order')||'null');
-  if(saved?.orderNo){openSavedOrder();return}
-  if(!cart.length){toast('Your bag is empty');return}
+  // Existing orders belong in Track my latest order; they must not block a new checkout.
+  // Only show the order history shortcut when the bag has no new items.
+  if(!cart.length){
+    const saved=JSON.parse(localStorage.getItem('lus_pending_order')||'null');
+    if(saved?.orderNo){openSavedOrder();return}
+    toast('Your bag is empty');return
+  }
   closeCart();document.getElementById('checkoutModal').classList.remove('hidden');updateDeliveryOptions()
 }
 function closeCheckout(){document.getElementById('checkoutModal').classList.add('hidden')}
