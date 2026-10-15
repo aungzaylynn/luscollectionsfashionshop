@@ -66,7 +66,7 @@
 
 <script>
 // Admin CRUD and Storage use Supabase directly; this avoids Vercel proxy timeouts during product/image saves. The anon key is public by design; RLS still applies.
-const SUPABASE_API_URL = window.LUS_SUPABASE_URL;
+const SUPABASE_API_URL = window.LUS_SUPABASE_PROXY === false ? window.LUS_SUPABASE_URL : (window.location.origin + '/api/supabase');
 const db=supabase.createClient(SUPABASE_API_URL,window.LUS_SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
 let products=[],orders=[],settings={},ootdPosts=[];let currentUser=null;let knownOrderIds=new Set();let orderNoticeReady=false;let orderChannel=null;
 async function setupOrderNotifications(){if('Notification' in window && Notification.permission==='default'){try{await Notification.requestPermission()}catch(e){}}knownOrderIds=new Set(orders.map(o=>String(o.id)));orderNoticeReady=true;if(orderChannel)db.removeChannel(orderChannel);orderChannel=db.channel('admin-order-notifications').on('postgres_changes',{event:'INSERT',schema:'public',table:'orders'},payload=>{const o=payload.new||{};if(!o.id||knownOrderIds.has(String(o.id)))return;knownOrderIds.add(String(o.id));try{if('Notification' in window&&Notification.permission==='granted'){const n=new Notification('New Lu’s Collections order',{body:(o.order_no||'Order')+' • '+(o.customer_name||'Customer')+' • '+money(o.total)});n.onclick=()=>{window.focus();tab('orders');n.close()}}}catch(e){};const badge=document.getElementById('newOrderBadge');if(badge){badge.classList.remove('hidden');badge.textContent='New order!'};refresh().catch(console.error)}).subscribe();}
