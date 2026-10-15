@@ -54,6 +54,7 @@ declare
   v_qty integer;
   v_size text;
   v_color text;
+  v_item_price integer;
   v_settings text;
 begin
   if coalesce(trim(p_customer_name),'') = '' or coalesce(trim(p_phone),'') = '' or coalesce(trim(p_address),'') = '' then
@@ -91,7 +92,8 @@ begin
       raise exception '% is out of stock', v_product.name;
     end if;
 
-    v_subtotal := v_subtotal + (v_product.price * v_qty);
+    v_item_price := coalesce(nullif(v_product.size_prices->>v_size,'')::integer, v_product.price);
+    v_subtotal := v_subtotal + (v_item_price * v_qty);
   end loop;
 
   v_total := v_subtotal + v_delivery;
@@ -117,8 +119,9 @@ begin
     where id = (item->>'productId')::bigint
     for update;
 
+    v_item_price := coalesce(nullif(v_product.size_prices->>v_size,'')::integer, v_product.price);
     insert into public.order_items(order_id, product_id, product_name, price, qty, size, color)
-    values(v_order_id, v_product.id, v_product.name, v_product.price, v_qty, v_size, v_color);
+    values(v_order_id, v_product.id, v_product.name, v_item_price, v_qty, v_size, v_color);
 
     update public.products
     set stock = stock - v_qty, updated_at = now()
