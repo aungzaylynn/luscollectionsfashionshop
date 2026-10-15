@@ -613,16 +613,29 @@ async function submitPaymentProof(){const file=document.getElementById('trackPay
 function addBundle(){const a=products.find(p=>p.name==='Casual Linen Blouse');const b=products.find(p=>p.name==='Wide Leg Trouser');if(a)addToCart(a.id);if(b)addToCart(b.id)}
 function setPromo(){promoShowAll=false;showPage('promos')}
 
-let storeRefreshTimer;
-function enableStoreRealtime(){
-  db.channel('lus-store-live')
-    .on('postgres_changes',{event:'*',schema:'public',table:'products'},()=>scheduleStoreRefresh())
-    .on('postgres_changes',{event:'*',schema:'public',table:'settings'},()=>scheduleStoreRefresh())
-    .on('postgres_changes',{event:'*',schema:'public',table:'ootd_posts'},()=>scheduleStoreRefresh())
-    .subscribe();
+// The Supabase REST API is routed through /api/supabase on this deployment.
+// WebSocket Realtime cannot use that HTTP proxy, so refresh visible storefront data by polling instead.
+let storeRefreshTimer=null;
+let storeRefreshInProgress=false;
+async function refreshStoreFromServer(){
+  if(storeRefreshInProgress || document.visibilityState==='hidden') return;
+  storeRefreshInProgress=true;
+  try{
+    await loadStore();
+    renderProducts();
+    renderPromos();
+    renderOotd();
+  }catch(e){
+    console.warn('Automatic store refresh failed; will retry on the next interval.',e?.message||e);
+  }finally{storeRefreshInProgress=false;}
 }
-function scheduleStoreRefresh(){clearTimeout(storeRefreshTimer);storeRefreshTimer=setTimeout(async()=>{try{await loadStore();renderProducts();renderPromos();renderOotd()}catch(e){console.warn('Live refresh failed',e)}},350)}
-enableStoreRealtime();
+function enableStoreAutoRefresh(){
+  if(storeRefreshTimer)clearInterval(storeRefreshTimer);
+  storeRefreshTimer=setInterval(refreshStoreFromServer,12000);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshStoreFromServer()});
+}
+function scheduleStoreRefresh(){refreshStoreFromServer()}
+enableStoreAutoRefresh();
 (async()=>{
   try{
     await loadStore();

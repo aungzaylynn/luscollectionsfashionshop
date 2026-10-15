@@ -69,7 +69,13 @@
 const SUPABASE_API_URL = window.LUS_SUPABASE_PROXY === false ? window.LUS_SUPABASE_URL : (window.location.origin + '/api/supabase');
 const db=supabase.createClient(SUPABASE_API_URL,window.LUS_SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
 let products=[],orders=[],settings={},ootdPosts=[];let currentUser=null;let knownOrderIds=new Set();let orderNoticeReady=false;let orderChannel=null;
-async function setupOrderNotifications(){if('Notification' in window && Notification.permission==='default'){try{await Notification.requestPermission()}catch(e){}}knownOrderIds=new Set(orders.map(o=>String(o.id)));orderNoticeReady=true;if(orderChannel)db.removeChannel(orderChannel);orderChannel=db.channel('admin-order-notifications').on('postgres_changes',{event:'INSERT',schema:'public',table:'orders'},payload=>{const o=payload.new||{};if(!o.id||knownOrderIds.has(String(o.id)))return;knownOrderIds.add(String(o.id));try{if('Notification' in window&&Notification.permission==='granted'){const n=new Notification('New Lu’s Collections order',{body:(o.order_no||'Order')+' • '+(o.customer_name||'Customer')+' • '+money(o.total)});n.onclick=()=>{window.focus();tab('orders');n.close()}}}catch(e){};const badge=document.getElementById('newOrderBadge');if(badge){badge.classList.remove('hidden');badge.textContent='New order!'};refresh().catch(console.error)}).subscribe();}
+async function setupOrderNotifications(){
+  if('Notification' in window && Notification.permission==='default'){try{await Notification.requestPermission()}catch(e){}}
+  // WebSocket Realtime is not supported by the site's HTTP Supabase proxy.
+  // refresh() runs every 20 seconds after admin login and detects new orders without a broken socket.
+  knownOrderIds=new Set(orders.map(o=>String(o.id)));
+  orderNoticeReady=true;
+}
 
 const money=n=>new Intl.NumberFormat('en-US').format(Number(n||0))+' Ks';
 async function requireAdmin(){
