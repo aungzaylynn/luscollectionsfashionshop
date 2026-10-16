@@ -113,7 +113,7 @@
       </div>
       <div id="searchBox" class="relative">
         <i data-lucide="search" class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400"></i>
-        <input id="searchInput" oninput="showAll=true; renderProducts(); renderSearchResults()" type="search"
+        <input id="searchInput" oninput="showAll=true; productPage=1; renderProducts(); renderSearchResults()" type="search"
           placeholder="Search dresses, tops, sleepwear..."
           class="w-full pl-12 pr-14 py-4 sm:py-5 rounded-2xl bg-white border border-stone-200 outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 shadow-sm text-sm sm:text-base">
         <button id="clearSearchBtn" type="button" onclick="clearProductSearch()" aria-label="Clear search" class="hidden absolute right-4 top-1/2 -translate-y-1/2 rounded-full border w-8 h-8 text-stone-500 hover:bg-stone-100">×</button>
@@ -148,8 +148,9 @@
             <h2 id="shopTitle" class="font-display text-3xl sm:text-4xl font-semibold mt-1">Shop Catalog</h2>
             <p id="resultCount" class="text-stone-500 text-sm mt-2"></p>
           </div>
-          <select id="sortSelect" onchange="renderProducts()" class="bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm outline-none">
+          <select id="sortSelect" onchange="productPage=1; renderProducts()" class="bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm outline-none">
             <option value="newest">Sort: Newest</option>
+            <option value="oldest">Sort: Oldest</option>
             <option value="low">Price: Low to High</option>
             <option value="high">Price: High to Low</option>
             <option value="name">Name A–Z</option>
@@ -167,6 +168,7 @@
 
       <div id="shopBackWrap" class="hidden mb-4"><button onclick="backToMain()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-stone-300 bg-white text-sm font-semibold"><i data-lucide="arrow-left" class="w-4 h-4"></i> Back to main page</button></div>
       <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"></div>
+      <nav id="productPagination" class="hidden flex flex-wrap items-center justify-center gap-2 mt-8" aria-label="Product pages"></nav>
 
       <div id="viewAllWrap" class="text-center mt-8">
         <button onclick="showAllProducts()" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-stone-950 text-white text-sm font-semibold hover:bg-stone-800 transition">
@@ -371,6 +373,8 @@ function filtered(){
   let list=products.filter(p=>category==='All'||p.category===category);
   if(q) list=list.filter(p=>(p.name+' '+p.category+' '+p.description).toLowerCase().includes(q));
   const sort=document.getElementById('sortSelect')?.value||'newest';
+  if(sort==='newest') list.sort((a,b)=>new Date(b.created_at||b.updated_at||0)-new Date(a.created_at||a.updated_at||0));
+  if(sort==='oldest') list.sort((a,b)=>new Date(a.created_at||a.updated_at||0)-new Date(b.created_at||b.updated_at||0));
   if(sort==='low') list.sort((a,b)=>a.price-b.price);
   if(sort==='high') list.sort((a,b)=>b.price-a.price);
   if(sort==='name') list.sort((a,b)=>a.name.localeCompare(b.name));
@@ -390,21 +394,32 @@ function card(p){
     <div class="p-4"><p class="text-[10px] uppercase tracking-wider text-stone-400">${p.category}</p><h3 class="text-sm font-semibold mt-1 truncate">${p.name}</h3><div class="flex items-center gap-2 mt-1.5"><b class="text-sm">${money(p.price)}</b>${p.size_prices&&Object.keys(p.size_prices).length?`<span class="text-[10px] text-stone-500">Size prices</span>`:''}${p.old_price?`<span class="text-xs text-stone-400 line-through">${money(p.old_price)}</span>`:''}</div><button ${soldOut?'disabled':''} onclick="event.stopPropagation();addToCart(${p.id})" class="mt-3 w-full border border-stone-300 hover:bg-stone-950 hover:text-white disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-stone-800 rounded-xl py-2.5 text-xs font-semibold transition">${soldOut?'Sold out':'Add to bag'}</button></div>
   </article>`;
 }
+let productPage=1;
+const PRODUCTS_PER_PAGE=20;
+function renderProductPagination(total){
+ const nav=document.getElementById("productPagination");if(!nav)return;const pages=Math.ceil(total/PRODUCTS_PER_PAGE);
+ if(!showAll||pages<=1){nav.classList.add("hidden");nav.innerHTML="";return;}nav.classList.remove("hidden");
+ const btn=(label,page,disabled=false,active=false)=>`<button ${disabled?"disabled":""} onclick="goProductPage(${page})" class="min-w-9 px-3 py-2 rounded-lg border text-sm ${active?"bg-stone-950 text-white border-stone-950":"bg-white border-stone-200"} ${disabled?"opacity-40 cursor-not-allowed":"hover:border-stone-500"}">${label}</button>`;
+ let html=btn("Newest",1,productPage===1)+btn("‹",Math.max(1,productPage-1),productPage===1);let start=Math.max(1,productPage-3),end=Math.min(pages,productPage+3);if(start>1)html+=`<span class="px-1 text-stone-400">…</span>`;for(let n=start;n<=end;n++)html+=btn(n,n,false,n===productPage);if(end<pages)html+=`<span class="px-1 text-stone-400">…</span>`;html+=btn("›",Math.min(pages,productPage+1),productPage===pages)+btn("Oldest",pages,productPage===pages);nav.innerHTML=html;
+}
+function goProductPage(page){productPage=Math.max(1,Number(page)||1);renderProducts();document.getElementById("shopTitle")?.scrollIntoView({behavior:"smooth",block:"start"});}
 function renderProducts(){
   categories();
   const list=filtered();
-  const visible=showAll?list:list.slice(0,6);
-  document.getElementById('resultCount').textContent=showAll?`${list.length} pieces`:`${Math.min(list.length,6)} of ${list.length} pieces`;
+  const pages=Math.max(1,Math.ceil(list.length/PRODUCTS_PER_PAGE));if(productPage>pages)productPage=pages;
+  const visible=showAll?list.slice((productPage-1)*PRODUCTS_PER_PAGE,productPage*PRODUCTS_PER_PAGE):list.slice(0,6);
+  document.getElementById('resultCount').textContent=showAll?`${list.length} pieces · Page ${productPage} of ${pages}`:`${Math.min(list.length,6)} of ${list.length} pieces`;
   document.getElementById('shopTitle').textContent=showAll?'Shop — All Products':'Shop Catalog';
   document.getElementById('productGrid').innerHTML=visible.length?visible.map(card).join(''):`<div class="col-span-full text-center py-16"><p class="font-display text-2xl">No pieces found.</p><p class="text-sm text-stone-500 mt-2">Try another search or category.</p></div>`;
+  renderProductPagination(list.length);
   document.getElementById('viewAllWrap').classList.toggle('hidden',showAll||list.length<=6);
   const back=document.getElementById('shopBackWrap');if(back)back.classList.toggle('hidden',!showAll);
   const btn=document.querySelector('#viewAllWrap button');if(btn)btn.innerHTML='View All Products <i data-lucide="arrow-right" class="w-4 h-4"></i>';
   const na=document.getElementById('newArrivals'); if(na){const fresh=products.filter(p=>p.is_featured).slice(0,10);na.innerHTML=fresh.map(p=>`<div class="snap-start shrink-0 w-[46%] sm:w-[30%] lg:w-[22%]">${card(p)}</div>`).join('');startNewArrivalAutoSlide()}
   lucide.createIcons();
 }
-function setCategory(c){category=c;showAll=true;renderProducts();showPage('shop');}
-function showAllProducts(){showAll=true;category='All';showPage('shop');window.scrollTo({top:0,behavior:'smooth'});}
+function setCategory(c){category=c;showAll=true;productPage=1;renderProducts();showPage('shop');}
+function showAllProducts(){showAll=true;category='All';productPage=1;showPage('shop');renderProducts();window.scrollTo({top:0,behavior:'smooth'});}
 function backToMain(){showAll=false;category='All';promoShowAll=false;showPage('home');renderProducts();window.scrollTo({top:0,behavior:'smooth'});}
 function promoProducts(){const today=new Date();today.setHours(0,0,0,0);return products.filter(p=>p.old_price&&(!p.promotion_start||new Date(p.promotion_start+'T00:00:00')<=today)&&(!p.promotion_end||new Date(p.promotion_end+'T23:59:59')>=today));}
 function renderPromos(){
